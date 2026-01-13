@@ -2,560 +2,1142 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Vitesse muscu (capteurs iPhone)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vitesse Muscu — 1RM & Puissance</title>
   <style>
-    :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 0; background: #0b0d10; color: #e9eef5; }
-    .wrap { max-width: 980px; margin: 0 auto; padding: 18px; }
-    .row { display: grid; gap: 14px; grid-template-columns: 1fr; }
-    @media (min-width: 820px) { .row { grid-template-columns: 1.15fr 0.85fr; } }
-    .card {
-      background: #121722; border: 1px solid #1f2a3a; border-radius: 16px;
-      padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    :root{
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#0f172a;
+      --muted:#475569;
+      --border:#e2e8f0;
+      --accent:#2563eb;
+      --accent2:#16a34a;
+      --danger:#dc2626;
+      --shadow: 0 10px 30px rgba(2,6,23,.08);
     }
-    h1 { font-size: 20px; margin: 0 0 10px; font-weight: 700; }
-    h2 { font-size: 15px; margin: 0 0 10px; opacity: .9; }
-    .muted { opacity: .75; font-size: 13px; line-height: 1.35; }
-    .controls { display: grid; gap: 10px; grid-template-columns: 1fr; }
-    .controls .grid2 { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
-    label { font-size: 13px; opacity: .85; display: block; margin-bottom: 6px; }
-    input, select {
-      width: 100%; box-sizing: border-box;
-      background: #0e1320; color: #e9eef5;
-      border: 1px solid #263249; border-radius: 12px;
-      padding: 10px 12px; font-size: 14px;
+    [data-theme="dark"]{
+      --bg:#0b1220;
+      --card:#0f172a;
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --border:#1f2a44;
+      --accent:#60a5fa;
+      --accent2:#34d399;
+      --danger:#fb7185;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width: 1100px;
+      margin: 24px auto 40px;
+      padding: 0 16px;
+    }
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom: 16px;
+    }
+    h1{
+      margin:0;
+      font-size: 22px;
+      letter-spacing: .2px;
+    }
+    .sub{
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.35;
+      max-width: 760px;
+    }
+    .top-actions{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      box-shadow:var(--shadow);
+    }
+    .controls{
+      padding: 14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:end;
+      margin: 14px 0;
+    }
+    label{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:12px;
+      color:var(--muted);
+      min-width: 170px;
+    }
+    input, select{
+      border:1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 10px 10px;
+      border-radius: 12px;
+      font-size: 14px;
       outline: none;
     }
-    input:focus, select:focus { border-color: #4b8bff; }
-    button {
-      background: #1e6bff; border: 0; color: white;
-      padding: 10px 12px; border-radius: 12px;
-      font-weight: 650; cursor: pointer; font-size: 14px;
+    input:focus, select:focus{
+      border-color: rgba(37,99,235,.55);
+      box-shadow: 0 0 0 4px rgba(37,99,235,.10);
     }
-    button.secondary { background: #253047; }
-    button.danger { background: #c0392b; }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .big {
-      display: grid; gap: 10px; align-items: center;
-      grid-template-columns: 1fr;
+    .btn{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .04s ease;
     }
-    .metric {
-      background: #0e1320; border: 1px solid #263249;
-      border-radius: 16px; padding: 14px;
+    .btn:active{ transform: translateY(1px); }
+    .btn.primary{
+      border-color: rgba(37,99,235,.35);
+      background: rgba(37,99,235,.10);
     }
-    .metric .label { font-size: 12px; opacity: .75; }
-    .metric .value { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; }
-    .metric .unit { font-size: 14px; opacity: .8; margin-left: 6px; }
-    .metric.small .value { font-size: 22px; }
-    .grid3 { display: grid; gap: 10px; grid-template-columns: 1fr; }
-    @media (min-width: 620px) { .grid3 { grid-template-columns: 1fr 1fr 1fr; } }
-    .pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      font-size: 12px; padding: 6px 10px; border-radius: 999px;
-      background: #0e1320; border: 1px solid #263249; opacity: .95;
+    .btn.good{
+      border-color: rgba(22,163,74,.35);
+      background: rgba(22,163,74,.10);
     }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #9aa7bd; }
-    .dot.ok { background: #2ecc71; }
-    .dot.warn { background: #f1c40f; }
-    .dot.bad { background: #e74c3c; }
+    .btn.danger{
+      border-color: rgba(220,38,38,.35);
+      background: rgba(220,38,38,.10);
+    }
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+    }
+    .pill{
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      color: var(--muted);
+      background: rgba(148,163,184,.08);
+    }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.05fr 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media(max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+      label{ min-width: 160px; }
+    }
+    .box{
+      padding: 14px;
+    }
+    .kpi-title{
+      margin:0 0 10px 0;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .big{
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: .2px;
+      margin: 6px 0 2px;
+    }
+    .unit{
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    .rows{
+      display:grid;
+      gap:8px;
+      margin-top: 8px;
+    }
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      padding: 10px 10px;
+      border-radius: 12px;
+      border:1px solid var(--border);
+      background: rgba(148,163,184,.06);
+    }
+    .row span{ color: var(--muted); font-size: 12px; }
+    .row strong{ font-size: 14px; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border-bottom: 1px solid #243048; padding: 10px 8px; text-align: left; font-size: 13px; }
-    th { opacity: .75; font-weight: 650; }
-    .right { text-align: right; }
-    .btnRow { display: flex; gap: 10px; flex-wrap: wrap; }
-    a.link { color: #7fb0ff; }
-    code { background: #0e1320; padding: 2px 6px; border-radius: 8px; border: 1px solid #263249; }
+    .chart-card{ margin-top: 12px; overflow:hidden; }
+    .tabs{
+      display:flex;
+      gap:8px;
+      padding: 10px 10px 0 10px;
+      flex-wrap:wrap;
+    }
+    .tab{
+      border:1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-size: 13px;
+    }
+    .tab.active{
+      border-color: rgba(37,99,235,.45);
+      background: rgba(37,99,235,.12);
+      color: var(--text);
+    }
+    canvas{ width:100%; height: 340px; display:block; padding: 10px; }
+
+    .table-card{ margin-top: 12px; padding: 12px; }
+    .table-actions{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom: 10px;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      overflow:auto;
+    }
+    th, td{
+      border-bottom:1px solid var(--border);
+      padding: 10px 8px;
+      text-align:left;
+      vertical-align: top;
+      white-space: nowrap;
+    }
+    th{ color: var(--muted); font-weight: 700; font-size: 12px; }
+    .muted{ color: var(--muted); }
+    details{ margin-top: 10px; }
+    details > summary{
+      cursor:pointer;
+      color: var(--muted);
+      font-size: 13px;
+      padding: 8px 2px;
+      user-select:none;
+    }
+    .adv{
+      display:flex;
+      flex-wrap:wrap;
+      gap:12px;
+      padding-top: 10px;
+    }
+    .hint{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height:1.35;
+    }
+    footer{
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+    }
+    .status-dot{
+      display:inline-block;
+      width:8px;height:8px;
+      border-radius:999px;
+      margin-right:6px;
+      background: var(--danger);
+      vertical-align:middle;
+    }
+    .status-dot.ok{ background: var(--accent2); }
   </style>
 </head>
 
 <body>
   <div class="wrap">
-    <h1>Vitesse Muscu (iPhone / iPad) — mesure via capteurs</h1>
-    <p class="muted">
-      Fixe le téléphone solidement sur la charge / barre (orientation stable). Appuie sur <b>Démarrer</b>, autorise les capteurs,
-      puis fais une répétition. À la fin de la rep, la page calcule et enregistre automatiquement :
-      <b>vitesse moyenne</b>, <b>vitesse pic</b>, <b>accélération pic</b> (associées à la charge).
-    </p>
-
-    <div class="row">
-      <div class="card">
-        <h2>Mesure en direct</h2>
-
-        <div class="btnRow" style="margin-bottom: 10px;">
-          <button id="btnStart">Démarrer</button>
-          <button id="btnStop" class="secondary" disabled>Stop</button>
-          <span class="pill"><span id="statusDot" class="dot"></span> <span id="statusText">En attente</span></span>
-          <span class="pill">Rep : <b id="repCount">0</b></span>
+    <header>
+      <div>
+        <h1>Vitesse Muscu — 1RM & Puissance</h1>
+        <div class="sub">
+          Mesure “smartphone” (accéléromètre) : vitesse moyenne / pic + estimation 1RM & puissance.
+          Pour iPhone : ouvre cette page sur le téléphone, puis appuie sur <b>Activer capteurs</b> et autorise “Mouvement et orientation”.
         </div>
+      </div>
+      <div class="top-actions">
+        <span class="pill" id="statusPill"><span class="status-dot"></span>Capteurs inactifs</span>
+        <label style="min-width:160px">
+          Thème
+          <select id="themeSel">
+            <option value="auto">Auto</option>
+            <option value="light" selected>Clair</option>
+            <option value="dark">Sombre</option>
+          </select>
+        </label>
+      </div>
+    </header>
 
-        <div class="big">
-          <div class="metric">
-            <div class="label">Vitesse instantanée (approx.)</div>
-            <div>
-              <span class="value" id="vLive">0.00</span><span class="unit">m/s</span>
-            </div>
+    <div class="card controls">
+      <label>
+        Exercice
+        <select id="exerciseSel">
+          <option value="bench">Bench press (développé couché)</option>
+          <option value="squat">Back squat (squat)</option>
+          <option value="deadlift">Deadlift (soulevé de terre)</option>
+          <option value="custom">Personnalisé</option>
+        </select>
+      </label>
+
+      <label>
+        Charge (kg)
+        <input id="loadKg" type="number" min="0" step="0.5" value="20" />
+      </label>
+
+      <label>
+        Estimation 1RM
+        <select id="rmMethod">
+          <option value="profile" selected>Profil individuel (recommandé)</option>
+          <option value="literature">Équation “littérature” (1 rep)</option>
+        </select>
+      </label>
+
+      <label>
+        Détection reps
+        <select id="repMode">
+          <option value="auto" selected>Auto</option>
+          <option value="manual">Manuel (bouton “Fin rep”)</option>
+        </select>
+      </label>
+
+      <button class="btn primary" id="btnEnable">Activer capteurs</button>
+      <button class="btn good" id="btnStart" disabled>Démarrer</button>
+      <button class="btn danger" id="btnStop" disabled>Stop</button>
+      <button class="btn" id="btnEndRep" disabled>Fin rep</button>
+    </div>
+
+    <div class="grid">
+      <div class="card box">
+        <div class="kpi-title">Vitesse instantanée</div>
+        <div class="big" id="vNow">0.00</div>
+        <div class="unit">m/s (estimation)</div>
+        <div class="rows">
+          <div class="row">
+            <span>Accélération instantanée</span>
+            <strong><span id="aNow">0.0</span> m/s²</strong>
           </div>
-
-          <div class="grid3">
-            <div class="metric small">
-              <div class="label">Accélération “utile” (filtrée)</div>
-              <div><span class="value" id="aLive">0.00</span><span class="unit">m/s²</span></div>
-            </div>
-            <div class="metric small">
-              <div class="label">Vitesse pic (pendant rep)</div>
-              <div><span class="value" id="vPeakLive">0.00</span><span class="unit">m/s</span></div>
-            </div>
-            <div class="metric small">
-              <div class="label">État rep</div>
-              <div><span class="value" id="repState">—</span></div>
-            </div>
+          <div class="row">
+            <span>Rep détectée</span>
+            <strong id="repState">Non</strong>
           </div>
-        </div>
-
-        <div style="margin-top: 12px;" class="muted">
-          ⚠️ Cette mesure est une estimation basée sur l’accéléromètre. La précision dépend beaucoup de :
-          fixation du téléphone, orientation stable, et absence de vibrations parasites.
         </div>
       </div>
 
-      <div class="card">
-        <h2>Paramètres</h2>
-
-        <div class="controls">
-          <div class="grid2">
-            <div>
-              <label for="loadInput">Charge (kg)</label>
-              <input type="number" id="loadInput" value="20" step="2.5" min="0" />
-            </div>
-            <div>
-              <label for="axisMode">Mode</label>
-              <select id="axisMode">
-                <option value="mag" selected>Magnitude (robuste)</option>
-                <option value="x">Axe X</option>
-                <option value="y">Axe Y</option>
-                <option value="z">Axe Z</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="grid2">
-            <div>
-              <label for="startThr">Seuil début rep (m/s²)</label>
-              <input type="number" id="startThr" value="0.60" step="0.05" min="0" />
-            </div>
-            <div>
-              <label for="stopThr">Seuil fin rep (m/s²)</label>
-              <input type="number" id="stopThr" value="0.25" step="0.05" min="0" />
-            </div>
-          </div>
-
-          <div class="grid2">
-            <div>
-              <label for="stopHold">Temps bas pour finir (ms)</label>
-              <input type="number" id="stopHold" value="250" step="50" min="50" />
-            </div>
-            <div>
-              <label for="decayTau">Anti-dérive vitesse (s)</label>
-              <input type="number" id="decayTau" value="0.35" step="0.05" min="0.05" />
-            </div>
-          </div>
-
-          <div class="btnRow">
-            <button id="btnReset" class="secondary">Nouveau set (vider tableau)</button>
-            <button id="btnExport" class="secondary">Exporter CSV</button>
-          </div>
-
-          <div class="muted">
-            Conseil : laisse 1–2 secondes au repos après <b>Démarrer</b> pour que le filtre “gravity” se stabilise.
-          </div>
+      <div class="card box">
+        <div class="kpi-title">Dernière répétition</div>
+        <div class="rows">
+          <div class="row"><span>Vitesse moyenne</span><strong id="lastVmean">—</strong></div>
+          <div class="row"><span>Vitesse pic</span><strong id="lastVpeak">—</strong></div>
+          <div class="row"><span>Accélération pic</span><strong id="lastApeak">—</strong></div>
+          <div class="row"><span>Puissance moyenne (≈ m·g·v)</span><strong id="lastPmean">—</strong></div>
+          <div class="row"><span>Puissance pic (≈ m·g·v)</span><strong id="lastPpeak">—</strong></div>
         </div>
+        <div class="hint">Puissance simplifiée : P ≈ (charge·9.81)·v. (Sans correction technique/trajectoire.)</div>
+      </div>
+
+      <div class="card box">
+        <div class="kpi-title">Estimations</div>
+        <div class="rows">
+          <div class="row"><span>1RM estimée (profil)</span><strong id="est1rmProfile">—</strong></div>
+          <div class="row"><span>1RM estimée (dernière rep)</span><strong id="est1rmLast">—</strong></div>
+          <div class="row"><span>%1RM (dernière rep)</span><strong id="estPctLast">—</strong></div>
+          <div class="row"><span>Meilleure puissance pic</span><strong id="bestPpeak">—</strong></div>
+        </div>
+        <div class="hint">Le “profil” devient utile dès que tu as ≥2 charges différentes sur le même exercice.</div>
       </div>
     </div>
 
-    <div class="card" style="margin-top: 14px;">
-      <h2>Dernière répétition enregistrée</h2>
-      <div class="grid3">
-        <div class="metric small">
-          <div class="label">Vitesse moyenne</div>
-          <div><span class="value" id="vMean">—</span><span class="unit">m/s</span></div>
-        </div>
-        <div class="metric small">
-          <div class="label">Vitesse pic</div>
-          <div><span class="value" id="vPeak">—</span><span class="unit">m/s</span></div>
-        </div>
-        <div class="metric small">
-          <div class="label">Accélération pic</div>
-          <div><span class="value" id="aPeak">—</span><span class="unit">m/s²</span></div>
-        </div>
+    <div class="card chart-card">
+      <div class="tabs">
+        <button class="tab active" data-tab="vel">Charge ↔︎ Vitesse</button>
+        <button class="tab" data-tab="pow">Charge ↔︎ Puissance</button>
       </div>
-
-      <h2 style="margin-top: 14px;">Historique charge–vitesse</h2>
-      <div class="muted">Chaque ligne = 1 rep. Tu peux changer la charge avant la rep suivante.</div>
-
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Charge (kg)</th>
-            <th class="right">Vitesse moy (m/s)</th>
-            <th class="right">Vitesse pic (m/s)</th>
-            <th class="right">Acc. pic (m/s²)</th>
-            <th class="right">Durée (s)</th>
-            <th>Horodatage</th>
-          </tr>
-        </thead>
-        <tbody id="resultsTable"></tbody>
-      </table>
+      <canvas id="chart" width="1000" height="380"></canvas>
     </div>
 
-    <p class="muted" style="margin-top: 12px;">
-      Astuce iPhone : <b>Partager → Ajouter à l’écran d’accueil</b> (ça fait une “app” et c’est plus stable).
-    </p>
+    <div class="card table-card">
+      <div class="table-actions">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button class="btn" id="btnExport">Exporter CSV</button>
+          <button class="btn danger" id="btnClear">Effacer</button>
+          <span class="pill"><span id="repCount">0</span> reps</span>
+        </div>
+        <span class="muted" id="smallNote">Astuce : fixe le téléphone solidement sur la barre (même orientation à chaque fois).</span>
+      </div>
+
+      <div style="overflow:auto;">
+        <table id="repTable">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Exercice</th>
+              <th>Charge (kg)</th>
+              <th>V moy (m/s)</th>
+              <th>V pic (m/s)</th>
+              <th>A pic (m/s²)</th>
+              <th>P moy (W)</th>
+              <th>P pic (W)</th>
+              <th>%1RM</th>
+              <th>1RM (kg)</th>
+              <th>Heure</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <details>
+        <summary>Réglages avancés (seuils + calibration + V1RM)</summary>
+        <div class="adv">
+          <label>
+            Seuil démarrage rep (m/s²)
+            <input id="thrStart" type="number" step="0.1" value="2.0" />
+          </label>
+          <label>
+            Seuil arrêt rep (m/s²)
+            <input id="thrStop" type="number" step="0.1" value="1.2" />
+          </label>
+          <label>
+            Maintien arrêt (ms)
+            <input id="holdStop" type="number" step="50" value="220" />
+          </label>
+          <label>
+            Damping vitesse (drift)
+            <input id="damping" type="number" step="0.1" value="1.2" />
+          </label>
+          <label>
+            Calibration vitesse (×)
+            <input id="calibV" type="number" step="0.01" value="1.00" />
+          </label>
+          <label>
+            V1RM profil (m/s) — squat ~0.32
+            <input id="v1rm" type="number" step="0.01" value="0.32" />
+          </label>
+        </div>
+        <div class="hint">
+          V1RM (profil) est la vitesse à 1RM : squat ≈ 0.32 m/s :contentReference[oaicite:2]{index=2} ; deadlift ≈ 0.16 m/s :contentReference[oaicite:3]{index=3} ; bench press varie selon protocole (souvent ~0.15–0.23 m/s selon matériel/mesure).
+        </div>
+      </details>
+    </div>
+
+    <footer>
+      <b>Références (équations intégrées)</b> :
+      Bench press : relation Charge(%1RM)–MPV publiée (ex. Load(%1RM)=110.893 − 64.187×MPV) :contentReference[oaicite:4]{index=4}.
+      Squat : équations MV/MPV/PV vs %1RM (quadratiques) :contentReference[oaicite:5]{index=5}.
+      Deadlift : équations linéaires %1RM vs MV/MPV/PV (ex. %1RM=108.680 − 73.501×MV) :contentReference[oaicite:6]{index=6}.
+      Méthode “profil” (régression charge-vitesse) discutée en 1RM prediction :contentReference[oaicite:7]{index=7}.
+      <br><br>
+      ⚠️ Ce site ne remplace pas un capteur VBT certifié. Utilise-le surtout pour le feedback et la comparaison relative (séance↔séance).
+    </footer>
   </div>
 
 <script>
 (() => {
-  // UI
   const $ = (id) => document.getElementById(id);
 
-  const btnStart = $("btnStart");
-  const btnStop  = $("btnStop");
-  const btnReset = $("btnReset");
-  const btnExport = $("btnExport");
+  // ---------- Theme ----------
+  const themeSel = $("themeSel");
+  function applyTheme() {
+    const v = themeSel.value;
+    if (v === "auto") {
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = prefersDark ? "dark" : "light";
+    } else {
+      document.documentElement.dataset.theme = v;
+    }
+    drawChart();
+  }
+  themeSel.addEventListener("change", applyTheme);
+  applyTheme();
 
-  const statusDot = $("statusDot");
-  const statusText = $("statusText");
+  // ---------- Exercise presets ----------
+  const EX = {
+    bench: {
+      name: "Bench press",
+      // “Littérature” : Load(%1RM) = 110.893 − 64.187 × MPV (Sci Rep 2025)
+      // On approxime MPV ≈ v_mean (calibration possible).
+      pctFromV: (vMean) => 110.893 - 64.187 * vMean,
+      // V1RM profil (à ajuster si besoin)
+      v1rmDefault: 0.20,
+    },
+    squat: {
+      name: "Back squat",
+      // MV = -0.00009201 L^2 -0.001224 L + 1.367  (L=%1RM)  (IJSM 2017)
+      // -> inversion quadratique
+      pctFromV: (vMean) => {
+        const a = -0.00009201;
+        const b = -0.001224;
+        const c = 1.367 - vMean;
+        const disc = b*b - 4*a*c;
+        if (disc < 0) return NaN;
+        const r1 = (-b + Math.sqrt(disc)) / (2*a);
+        const r2 = (-b - Math.sqrt(disc)) / (2*a);
+        const candidates = [r1, r2].filter(x => isFinite(x) && x >= 0 && x <= 130);
+        if (!candidates.length) return NaN;
+        // choisir celui le plus plausible (souvent autour 30–100)
+        candidates.sort((x,y)=>Math.abs(x-75)-Math.abs(y-75));
+        return candidates[0];
+      },
+      v1rmDefault: 0.32, // ~0.32 m/s :contentReference[oaicite:8]{index=8}
+    },
+    deadlift: {
+      name: "Deadlift",
+      // Load(%1RM)=108.680 − 73.501×MV (JSSM 2017)
+      pctFromV: (vMean) => 108.680 - 73.501 * vMean,
+      v1rmDefault: 0.16, // ~0.16 m/s :contentReference[oaicite:9]{index=9}
+    },
+    custom: {
+      name: "Personnalisé",
+      pctFromV: (_) => NaN,
+      v1rmDefault: 0.25,
+    }
+  };
 
-  const vLiveEl = $("vLive");
-  const aLiveEl = $("aLive");
-  const vPeakLiveEl = $("vPeakLive");
+  const exerciseSel = $("exerciseSel");
+  const rmMethod = $("rmMethod");
+  const repMode = $("repMode");
+  const loadKgEl = $("loadKg");
+
+  const v1rmEl = $("v1rm");
+  function syncV1RMDefault(){
+    const ex = EX[exerciseSel.value];
+    v1rmEl.value = (ex?.v1rmDefault ?? 0.25).toFixed(2);
+  }
+  exerciseSel.addEventListener("change", () => {
+    syncV1RMDefault();
+    refreshAll();
+  });
+  syncV1RMDefault();
+
+  // ---------- Advanced settings ----------
+  const thrStartEl = $("thrStart");
+  const thrStopEl  = $("thrStop");
+  const holdStopEl = $("holdStop");
+  const dampingEl  = $("damping");
+  const calibVEl   = $("calibV");
+
+  // ---------- UI elements ----------
+  const statusPill = $("statusPill");
+  const vNowEl = $("vNow");
+  const aNowEl = $("aNow");
   const repStateEl = $("repState");
+
+  const lastVmeanEl = $("lastVmean");
+  const lastVpeakEl = $("lastVpeak");
+  const lastApeakEl = $("lastApeak");
+  const lastPmeanEl = $("lastPmean");
+  const lastPpeakEl = $("lastPpeak");
+
+  const est1rmProfileEl = $("est1rmProfile");
+  const est1rmLastEl = $("est1rmLast");
+  const estPctLastEl = $("estPctLast");
+  const bestPpeakEl = $("bestPpeak");
+
   const repCountEl = $("repCount");
+  const repTableBody = $("repTable").querySelector("tbody");
 
-  const vMeanEl = $("vMean");
-  const vPeakEl = $("vPeak");
-  const aPeakEl = $("aPeak");
+  const btnEnable = $("btnEnable");
+  const btnStart  = $("btnStart");
+  const btnStop   = $("btnStop");
+  const btnEndRep = $("btnEndRep");
+  const btnExport = $("btnExport");
+  const btnClear  = $("btnClear");
 
-  const loadInput = $("loadInput");
-  const axisMode = $("axisMode");
-  const startThrEl = $("startThr");
-  const stopThrEl = $("stopThr");
-  const stopHoldEl = $("stopHold");
-  const decayTauEl = $("decayTau");
-  const tableBody = $("resultsTable");
+  // ---------- Chart tabs ----------
+  let activeTab = "vel";
+  document.querySelectorAll(".tab").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      activeTab = btn.dataset.tab;
+      drawChart();
+    });
+  });
+  const canvas = $("chart");
+  const ctx = canvas.getContext("2d");
 
-  // Data / state
-  let listening = false;
+  // ---------- Data ----------
+  const reps = [];
+  let bestPpeak = 0;
+
+  // ---------- Sensor / motion processing ----------
+  let enabled = false;
+  let running = false;
+
   let lastT = null;
 
-  // Filters / signals
-  let gSlow = 9.81;     // baseline (gravity-ish), updated by slow EMA
-  let aEMA  = 0;        // fast EMA of motion magnitude
-  let v     = 0;        // scalar speed estimate
-  let vPeakLive = 0;
+  // gravity estimate (for devices that only provide accelerationIncludingGravity)
+  const grav = {x:0,y:0,z:0};
+  let aEMA = 0;
+  let v = 0;
 
-  // Rep detection
+  // rep state
   let inRep = false;
+  let repStartT = 0;
   let belowSince = null;
-  let repCount = 0;
-  let repStartT = null;
-  let repV = [];
-  let repA = [];
 
-  // Stored history
-  const rows = []; // {rep, load, vMean, vPeak, aPeak, dur, iso}
+  let sumV = 0;
+  let nV = 0;
+  let vPeak = 0;
+  let aPeak = 0;
 
-  function setStatus(kind, text) {
-    statusDot.className = "dot " + (kind || "");
-    statusText.textContent = text;
+  function setStatus(ok, text){
+    statusPill.innerHTML = `<span class="status-dot ${ok ? "ok":""}"></span>${text}`;
   }
 
-  function clampDt(dt) {
-    if (!isFinite(dt) || dt <= 0) return 0.016;
-    return Math.max(0.002, Math.min(0.08, dt)); // clamp between ~12Hz and 500Hz
+  function formatNum(x, d=2){
+    if (!isFinite(x)) return "—";
+    return Number(x).toFixed(d);
+  }
+  function nowStr(){
+    const d = new Date();
+    return d.toLocaleTimeString([], {hour:"2-digit", minute:"2-digit", second:"2-digit"});
   }
 
-  function getParams() {
-    const START_THR = parseFloat(startThrEl.value) || 0.6;
-    const STOP_THR  = parseFloat(stopThrEl.value)  || 0.25;
-    const STOP_HOLD_MS = parseInt(stopHoldEl.value, 10) || 250;
-    const DECAY_TAU = parseFloat(decayTauEl.value) || 0.35;
-    return { START_THR, STOP_THR, STOP_HOLD_MS, DECAY_TAU };
-  }
-
-  function readAccel(evt) {
-    // Prefer "acceleration" (without gravity) if available; fallback to includingGravity.
-    const a = evt.acceleration;
-    const ag = evt.accelerationIncludingGravity;
-
-    // Some devices give nulls. Fallback carefully.
-    let ax = null, ay = null, az = null;
-
-    if (a && (a.x !== null || a.y !== null || a.z !== null)) {
-      ax = a.x; ay = a.y; az = a.z;
-    } else if (ag && (ag.x !== null || ag.y !== null || ag.z !== null)) {
-      ax = ag.x; ay = ag.y; az = ag.z;
-    } else {
-      return null;
-    }
-
-    // If still null, bail.
-    if (ax === null || ay === null || az === null) return null;
-
-    const mode = axisMode.value;
-    let raw;
-    if (mode === "mag") {
-      raw = Math.sqrt(ax*ax + ay*ay + az*az);
-    } else if (mode === "x") {
-      raw = ax;
-    } else if (mode === "y") {
-      raw = ay;
-    } else {
-      raw = az;
-    }
-
-    return { raw };
-  }
-
-  function startRep(now) {
-    inRep = true;
-    repCount += 1;
-    repCountEl.textContent = repCount.toString();
-    repStateEl.textContent = "EN REP";
-    repStartT = now;
-    belowSince = null;
-    repV = [];
-    repA = [];
-    v = 0;
-    vPeakLive = 0;
-    vPeakLiveEl.textContent = "0.00";
-    setStatus("warn", "Répétition détectée");
-  }
-
-  function endRep(now) {
-    inRep = false;
-    repStateEl.textContent = "—";
-    setStatus("ok", "En écoute");
-    belowSince = null;
-
-    if (repV.length < 6) {
-      // Rep too short / noise
-      repV = []; repA = [];
-      v = 0; aEMA = 0;
-      return;
-    }
-
-    const vMean = repV.reduce((s,x) => s + x, 0) / repV.length;
-    const vPeak = Math.max(...repV);
-    const aPeak = Math.max(...repA);
-    const dur = (now - repStartT) / 1000;
-
-    vMeanEl.textContent = vMean.toFixed(2);
-    vPeakEl.textContent = vPeak.toFixed(2);
-    aPeakEl.textContent = aPeak.toFixed(2);
-
-    const load = parseFloat(loadInput.value) || 0;
-    const iso = new Date().toISOString();
-
-    const rowObj = { rep: repCount, load, vMean, vPeak, aPeak, dur, iso };
-    rows.push(rowObj);
-    renderTable();
-
-    // reset for next rep
-    repV = []; repA = [];
-    v = 0; aEMA = 0;
-  }
-
-  function renderTable() {
-    tableBody.innerHTML = "";
-    for (const r of rows) {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${r.rep}</td>
-        <td>${r.load.toFixed(1)}</td>
-        <td class="right">${r.vMean.toFixed(2)}</td>
-        <td class="right">${r.vPeak.toFixed(2)}</td>
-        <td class="right">${r.aPeak.toFixed(2)}</td>
-        <td class="right">${r.dur.toFixed(2)}</td>
-        <td>${r.iso.replace("T"," ").replace("Z","")}</td>
-      `;
-      tableBody.appendChild(tr);
+  async function requestPermissionIfNeeded(){
+    // iOS 13+ requires user gesture & permission
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function") {
+      const res = await DeviceMotionEvent.requestPermission();
+      if (res !== "granted") throw new Error("Permission capteurs refusée.");
     }
   }
 
-  function exportCSV() {
-    if (!rows.length) return;
-
-    const header = ["rep","load_kg","v_mean_ms","v_peak_ms","a_peak_ms2","duration_s","timestamp_iso"];
-    const lines = [header.join(",")];
-    for (const r of rows) {
-      lines.push([
-        r.rep,
-        r.load.toFixed(2),
-        r.vMean.toFixed(4),
-        r.vPeak.toFixed(4),
-        r.aPeak.toFixed(4),
-        r.dur.toFixed(4),
-        r.iso
-      ].join(","));
-    }
-
-    const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vitesse-muscu_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 2000);
+  function enableSensors(){
+    window.addEventListener("devicemotion", onMotion, {passive:true});
+    enabled = true;
+    btnStart.disabled = false;
+    setStatus(true, "Capteurs prêts");
   }
 
-  function resetAll() {
-    rows.length = 0;
-    renderTable();
-    repCount = 0;
-    repCountEl.textContent = "0";
-    vMeanEl.textContent = "—";
-    vPeakEl.textContent = "—";
-    aPeakEl.textContent = "—";
-  }
-
-  function onMotion(evt) {
-    const now = performance.now();
-    if (lastT === null) lastT = now;
-    const dt = clampDt((now - lastT) / 1000);
-    lastT = now;
-
-    const p = getParams();
-    const acc = readAccel(evt);
-    if (!acc) return;
-
-    // High-pass: remove slow baseline (gravity-ish) with a slow EMA.
-    const ALPHA_SLOW = 0.02;   // baseline (gravity) tracking
-    const ALPHA_FAST = 0.35;   // motion smoothing (fast EMA)
-
-    // Update baseline
-    gSlow = (1 - ALPHA_SLOW) * gSlow + ALPHA_SLOW * acc.raw;
-
-    // High-pass component
-    const aHP = acc.raw - gSlow;
-    const aAbs = Math.abs(aHP);
-
-    // Fast smoothing of motion
-    aEMA = (1 - ALPHA_FAST) * aEMA + ALPHA_FAST * aAbs;
-
-    // Speed integration + anti-drift decay
-    const tau = Math.max(0.05, p.DECAY_TAU);
-    const decay = Math.exp(-dt / tau);
-    v = v * decay + aEMA * dt;
-    if (v < 0) v = 0;
-
-    // Live displays
-    aLiveEl.textContent = aEMA.toFixed(2);
-    vLiveEl.textContent = v.toFixed(2);
-
-    if (inRep) {
-      repV.push(v);
-      repA.push(aEMA);
-      if (v > vPeakLive) {
-        vPeakLive = v;
-        vPeakLiveEl.textContent = vPeakLive.toFixed(2);
-      }
-
-      // Stop logic
-      if (aEMA < p.STOP_THR) {
-        if (belowSince === null) belowSince = now;
-        if ((now - belowSince) > p.STOP_HOLD_MS) {
-          endRep(now);
-        }
-      } else {
-        belowSince = null;
-      }
-    } else {
-      // Start logic
-      if (aEMA > p.START_THR) {
-        startRep(now);
-      }
-    }
-  }
-
-  async function requestPermissionIfNeeded() {
-    // iOS 13+ requires explicit user permission via user gesture
-    if (typeof DeviceMotionEvent !== "undefined" &&
-        typeof DeviceMotionEvent.requestPermission === "function") {
-      const resp = await DeviceMotionEvent.requestPermission();
-      if (resp !== "granted") throw new Error("Permission capteurs refusée");
-    }
-  }
-
-  function startListening() {
-    if (listening) return;
-
-    window.addEventListener("devicemotion", onMotion, { passive: true });
-    listening = true;
-
-    btnStart.disabled = true;
-    btnStop.disabled = false;
-
-    setStatus("ok", "En écoute");
-    repStateEl.textContent = "—";
-
-    // Reset integrators
+  function start(){
+    if (!enabled) return;
+    running = true;
     lastT = null;
     aEMA = 0;
     v = 0;
-    vPeakLive = 0;
-    vLiveEl.textContent = "0.00";
-    aLiveEl.textContent = "0.00";
-    vPeakLiveEl.textContent = "0.00";
-  }
-
-  function stopListening() {
-    if (!listening) return;
-
-    window.removeEventListener("devicemotion", onMotion);
-    listening = false;
-
-    btnStart.disabled = false;
-    btnStop.disabled = true;
-
-    setStatus("", "En attente");
-    repStateEl.textContent = "—";
-
-    // Reset rep state
     inRep = false;
     belowSince = null;
-    repV = []; repA = [];
-    v = 0; aEMA = 0; lastT = null;
 
-    vLiveEl.textContent = "0.00";
-    aLiveEl.textContent = "0.00";
-    vPeakLiveEl.textContent = "0.00";
+    btnStart.disabled = true;
+    btnStop.disabled = false;
+    btnEndRep.disabled = (repMode.value !== "manual");
+    exerciseSel.disabled = true;
+    loadKgEl.disabled = true;
+    rmMethod.disabled = true;
+    repMode.disabled = true;
+
+    setStatus(true, "Mesure en cours");
   }
 
-  btnStart.addEventListener("click", async () => {
-    try {
-      setStatus("warn", "Demande d’autorisation…");
+  function stop(){
+    running = false;
+    btnStart.disabled = false;
+    btnStop.disabled = true;
+    btnEndRep.disabled = true;
+
+    exerciseSel.disabled = false;
+    loadKgEl.disabled = false;
+    rmMethod.disabled = false;
+    repMode.disabled = false;
+
+    repStateEl.textContent = "Non";
+    setStatus(enabled, enabled ? "Capteurs prêts" : "Capteurs inactifs");
+  }
+
+  function startRep(t){
+    inRep = true;
+    repStartT = t;
+    sumV = 0; nV = 0;
+    vPeak = 0; aPeak = 0;
+    belowSince = null;
+    repStateEl.textContent = "Oui";
+  }
+
+  function endRep(t, forced=false){
+    if (!inRep) return;
+    inRep = false;
+    repStateEl.textContent = "Non";
+    belowSince = null;
+
+    const vMean = (nV > 0) ? (sumV / nV) : 0;
+    const loadKg = Math.max(0, parseFloat(loadKgEl.value || "0"));
+    const exId = exerciseSel.value;
+    const exName = EX[exId]?.name ?? exId;
+
+    // puissance simplifiée
+    const Pmean = loadKg * 9.81 * vMean;
+    const Ppeak = loadKg * 9.81 * vPeak;
+
+    // Estimations 1RM
+    const calib = Math.max(0.1, parseFloat(calibVEl.value || "1"));
+    const vForEst = vMean * calib;
+
+    let pct = NaN;
+    let oneRM = NaN;
+
+    if (rmMethod.value === "literature") {
+      pct = EX[exId]?.pctFromV?.(vForEst);
+      if (isFinite(pct)) {
+        pct = Math.max(5, Math.min(120, pct));
+        oneRM = (pct > 0) ? (loadKg / (pct/100)) : NaN;
+      }
+    } else {
+      // “profil” pour la dernière rep = on met aussi une estimation “instantanée” via % si dispo, sinon —
+      pct = EX[exId]?.pctFromV?.(vForEst);
+      if (isFinite(pct)) {
+        pct = Math.max(5, Math.min(120, pct));
+        oneRM = (pct > 0) ? (loadKg / (pct/100)) : NaN;
+      }
+    }
+
+    reps.push({
+      id: reps.length + 1,
+      exId, exName,
+      loadKg,
+      vMean,
+      vPeak,
+      aPeak,
+      Pmean,
+      Ppeak,
+      pct,
+      oneRM,
+      time: nowStr(),
+      forced
+    });
+
+    bestPpeak = Math.max(bestPpeak, Ppeak);
+
+    // Update “last” cards
+    lastVmeanEl.textContent = `${formatNum(vMean,2)} m/s`;
+    lastVpeakEl.textContent = `${formatNum(vPeak,2)} m/s`;
+    lastApeakEl.textContent = `${formatNum(aPeak,1)} m/s²`;
+    lastPmeanEl.textContent = `${formatNum(Pmean,0)} W`;
+    lastPpeakEl.textContent = `${formatNum(Ppeak,0)} W`;
+    estPctLastEl.textContent = isFinite(pct) ? `${formatNum(pct,1)} %` : "—";
+    est1rmLastEl.textContent = isFinite(oneRM) ? `${formatNum(oneRM,1)} kg` : "—";
+    bestPpeakEl.textContent = bestPpeak > 0 ? `${formatNum(bestPpeak,0)} W` : "—";
+
+    refreshAll();
+  }
+
+  function onMotion(e){
+    if (!running) return;
+
+    const t = performance.now();
+    const dt = (lastT == null)
+      ? ((e.interval && isFinite(e.interval)) ? (e.interval/1000) : 0.016)
+      : Math.max(0.001, (t - lastT)/1000);
+    lastT = t;
+
+    // Read acceleration
+    let ax=null, ay=null, az=null;
+    if (e.acceleration && e.acceleration.x != null) {
+      ax = e.acceleration.x; ay = e.acceleration.y; az = e.acceleration.z;
+    } else if (e.accelerationIncludingGravity && e.accelerationIncludingGravity.x != null) {
+      const alphaG = 0.08; // low-pass for gravity
+      grav.x = grav.x*(1-alphaG) + e.accelerationIncludingGravity.x*alphaG;
+      grav.y = grav.y*(1-alphaG) + e.accelerationIncludingGravity.y*alphaG;
+      grav.z = grav.z*(1-alphaG) + e.accelerationIncludingGravity.z*alphaG;
+      ax = e.accelerationIncludingGravity.x - grav.x;
+      ay = e.accelerationIncludingGravity.y - grav.y;
+      az = e.accelerationIncludingGravity.z - grav.z;
+    } else {
+      return;
+    }
+
+    const a = Math.sqrt(ax*ax + ay*ay + az*az);
+    const alphaA = 0.25; // smoothing
+    aEMA = aEMA*(1-alphaA) + a*alphaA;
+
+    // integrate speed with damping to limit drift
+    const START_THR = Math.max(0.1, parseFloat(thrStartEl.value || "2.0"));
+    const STOP_THR  = Math.max(0.05, parseFloat(thrStopEl.value  || "1.2"));
+    const DAMPING   = Math.max(0.0, parseFloat(dampingEl.value  || "1.2"));
+
+    if (aEMA > START_THR) {
+      v = Math.max(0, v + aEMA * dt);
+    } else {
+      v = v * Math.exp(-DAMPING * dt);
+      if (v < 0.01) v = 0;
+    }
+
+    // Apply user calibration only for display
+    const calib = Math.max(0.1, parseFloat(calibVEl.value || "1"));
+    const vDisplay = v * calib;
+
+    // UI live
+    vNowEl.textContent = formatNum(vDisplay, 2);
+    aNowEl.textContent = formatNum(aEMA, 1);
+
+    const mode = repMode.value;
+
+    if (mode === "auto") {
+      if (!inRep && aEMA > START_THR) startRep(t);
+
+      if (inRep) {
+        // collect
+        sumV += vDisplay;
+        nV += 1;
+        vPeak = Math.max(vPeak, vDisplay);
+        aPeak = Math.max(aPeak, aEMA);
+
+        // stop detection
+        if (aEMA < STOP_THR) {
+          if (belowSince == null) belowSince = t;
+          const HOLD_MS = Math.max(50, parseFloat(holdStopEl.value || "220"));
+          if ((t - belowSince) >= HOLD_MS) endRep(t);
+        } else {
+          belowSince = null;
+        }
+      }
+    } else {
+      // manual: auto-start, manual end
+      if (!inRep && aEMA > START_THR) startRep(t);
+      if (inRep) {
+        sumV += vDisplay;
+        nV += 1;
+        vPeak = Math.max(vPeak, vDisplay);
+        aPeak = Math.max(aPeak, aEMA);
+      }
+    }
+  }
+
+  // ---------- Profile estimation ----------
+  function estimate1RMProfile(){
+    const exId = exerciseSel.value;
+    const v1rm = Math.max(0.05, parseFloat(v1rmEl.value || "0.25"));
+    const points = reps.filter(r => r.exId === exId && isFinite(r.vMean) && isFinite(r.loadKg));
+
+    // Needs at least 2 distinct loads
+    const distinctLoads = [...new Set(points.map(p => p.loadKg))];
+    if (distinctLoads.length < 2) return NaN;
+
+    // Linear regression: v = m*load + b
+    const xs = points.map(p => p.loadKg);
+    const ys = points.map(p => p.vMean * Math.max(0.1, parseFloat(calibVEl.value || "1")));
+
+    const n = xs.length;
+    const meanX = xs.reduce((a,b)=>a+b,0)/n;
+    const meanY = ys.reduce((a,b)=>a+b,0)/n;
+
+    let num=0, den=0;
+    for (let i=0;i<n;i++){
+      num += (xs[i]-meanX)*(ys[i]-meanY);
+      den += (xs[i]-meanX)*(xs[i]-meanX);
+    }
+    if (den === 0) return NaN;
+
+    const m = num/den;
+    const b = meanY - m*meanX;
+
+    // Want load at v = v1rm
+    if (m === 0) return NaN;
+    const loadAtV1rm = (v1rm - b)/m;
+
+    // In practice m should be negative. If positive, data likely wrong.
+    if (!isFinite(loadAtV1rm) || loadAtV1rm <= 0) return NaN;
+
+    return loadAtV1rm;
+  }
+
+  // ---------- Table + chart ----------
+  function refreshTable(){
+    repTableBody.innerHTML = "";
+    reps.forEach(r=>{
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.id}</td>
+        <td>${r.exName}</td>
+        <td>${formatNum(r.loadKg,1)}</td>
+        <td>${formatNum(r.vMean,2)}</td>
+        <td>${formatNum(r.vPeak,2)}</td>
+        <td>${formatNum(r.aPeak,1)}</td>
+        <td>${formatNum(r.Pmean,0)}</td>
+        <td>${formatNum(r.Ppeak,0)}</td>
+        <td>${isFinite(r.pct) ? formatNum(r.pct,1) : "—"}</td>
+        <td>${isFinite(r.oneRM) ? formatNum(r.oneRM,1) : "—"}</td>
+        <td class="muted">${r.time}</td>
+      `;
+      repTableBody.appendChild(tr);
+    });
+    repCountEl.textContent = reps.length;
+  }
+
+  function clearAll(){
+    reps.length = 0;
+    bestPpeak = 0;
+    lastVmeanEl.textContent = "—";
+    lastVpeakEl.textContent = "—";
+    lastApeakEl.textContent = "—";
+    lastPmeanEl.textContent = "—";
+    lastPpeakEl.textContent = "—";
+    est1rmLastEl.textContent = "—";
+    estPctLastEl.textContent = "—";
+    bestPpeakEl.textContent = "—";
+    refreshAll();
+  }
+
+  function exportCSV(){
+    if (!reps.length) return;
+    const headers = ["id","exercise","loadKg","vMean","vPeak","aPeak","Pmean","Ppeak","pct1RM","oneRM","time"];
+    const rows = reps.map(r => [
+      r.id,
+      r.exName,
+      r.loadKg,
+      r.vMean,
+      r.vPeak,
+      r.aPeak,
+      r.Pmean,
+      r.Ppeak,
+      (isFinite(r.pct) ? r.pct : ""),
+      (isFinite(r.oneRM) ? r.oneRM : ""),
+      r.time
+    ]);
+    const csv = [headers.join(","), ...rows.map(x=>x.join(","))].join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vitesse-muscu_${exerciseSel.value}_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function drawAxes(pad, w, h, xMin, xMax, yMin, yMax, xLabel, yLabel){
+    ctx.save();
+    ctx.clearRect(0,0,w,h);
+
+    // background
+    const bg = getComputedStyle(document.documentElement).getPropertyValue("--card").trim();
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    const border = getComputedStyle(document.documentElement).getPropertyValue("--border").trim();
+    ctx.strokeStyle = border;
+    ctx.lineWidth = 1;
+
+    // axes
+    ctx.beginPath();
+    ctx.moveTo(pad, pad);
+    ctx.lineTo(pad, h-pad);
+    ctx.lineTo(w-pad, h-pad);
+    ctx.stroke();
+
+    const muted = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+    ctx.fillStyle = muted;
+    ctx.font = "12px ui-sans-serif, system-ui";
+
+    ctx.fillText(yLabel, pad, pad-6);
+    ctx.fillText(xLabel, w-pad-ctx.measureText(xLabel).width, h-pad+26);
+
+    // ticks
+    const ticks = 5;
+    for (let i=0;i<=ticks;i++){
+      const tx = pad + (w-2*pad)*(i/ticks);
+      const val = xMin + (xMax-xMin)*(i/ticks);
+      ctx.beginPath();
+      ctx.moveTo(tx, h-pad);
+      ctx.lineTo(tx, h-pad+6);
+      ctx.stroke();
+      ctx.fillText(val.toFixed(0), tx-6, h-pad+18);
+    }
+    for (let i=0;i<=ticks;i++){
+      const ty = h-pad - (h-2*pad)*(i/ticks);
+      const val = yMin + (yMax-yMin)*(i/ticks);
+      ctx.beginPath();
+      ctx.moveTo(pad-6, ty);
+      ctx.lineTo(pad, ty);
+      ctx.stroke();
+      ctx.fillText(val.toFixed( (yMax<=2 ? 2 : 0) ), 6, ty+4);
+    }
+    ctx.restore();
+  }
+
+  function toXY(load, y, pad, w, h, xMin, xMax, yMin, yMax){
+    const x = pad + (w-2*pad) * ((load - xMin) / (xMax - xMin || 1));
+    const yy = h - pad - (h-2*pad) * ((y - yMin) / (yMax - yMin || 1));
+    return {x, y: yy};
+  }
+
+  function drawChart(){
+    const exId = exerciseSel.value;
+    const points = reps.filter(r => r.exId === exId);
+
+    const w = canvas.width;
+    const h = canvas.height;
+    const pad = 52;
+
+    if (!points.length){
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+      ctx.font = "14px ui-sans-serif, system-ui";
+      ctx.fillText("Ajoute des répétitions pour afficher le graphique.", 20, 40);
+      return;
+    }
+
+    const loads = points.map(p => p.loadKg);
+    const xMin = 0;
+    const xMax = Math.max(...loads, 20) * 1.15;
+
+    if (activeTab === "vel"){
+      const ys = points.map(p => p.vMean * Math.max(0.1, parseFloat(calibVEl.value || "1")));
+      const yMin = 0;
+      const yMax = Math.max(...ys, 0.2) * 1.25;
+
+      drawAxes(pad,w,h,xMin,xMax,yMin,yMax,"Charge (kg)","Vitesse moyenne (m/s)");
+
+      // points
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      ctx.fillStyle = accent;
+      points.forEach(p=>{
+        const y = p.vMean * Math.max(0.1, parseFloat(calibVEl.value || "1"));
+        const pt = toXY(p.loadKg, y, pad,w,h,xMin,xMax,yMin,yMax);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI*2);
+        ctx.fill();
+      });
+
+      // regression + 1RM (profile)
+      const oneRMp = estimate1RMProfile();
+      if (isFinite(oneRMp)){
+        // compute regression line from current points (same as in estimator)
+        const xs = points.map(p=>p.loadKg);
+        const ys2 = points.map(p=>p.vMean * Math.max(0.1, parseFloat(calibVEl.value || "1")));
+        const n=xs.length;
+        const mx=xs.reduce((a,b)=>a+b,0)/n;
+        const my=ys2.reduce((a,b)=>a+b,0)/n;
+        let num=0, den=0;
+        for(let i=0;i<n;i++){ num+=(xs[i]-mx)*(ys2[i]-my); den+=(xs[i]-mx)*(xs[i]-mx); }
+        const m = (den===0)?0:(num/den);
+        const b = my - m*mx;
+
+        ctx.strokeStyle = accent;
+        ctx.lineWidth = 2;
+        const xA = xMin;
+        const yA = m*xA + b;
+        const xB = xMax;
+        const yB = m*xB + b;
+        const pA = toXY(xA,yA,pad,w,h,xMin,xMax,yMin,yMax);
+        const pB = toXY(xB,yB,pad,w,h,xMin,xMax,yMin,yMax);
+        ctx.beginPath();
+        ctx.moveTo(pA.x,pA.y);
+        ctx.lineTo(pB.x,pB.y);
+        ctx.stroke();
+
+        // 1RM vertical
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue("--accent2").trim();
+        ctx.lineWidth = 2;
+        const x1 = oneRMp;
+        const top = toXY(x1,yMax,pad,w,h,xMin,xMax,yMin,yMax);
+        const bot = toXY(x1,yMin,pad,w,h,xMin,xMax,yMin,yMax);
+        ctx.beginPath();
+        ctx.moveTo(top.x, top.y);
+        ctx.lineTo(bot.x, bot.y);
+        ctx.stroke();
+
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue("--muted").trim();
+        ctx.font = "12px ui-sans-serif, system-ui";
+        ctx.fillText(`1RM profil ≈ ${oneRMp.toFixed(1)} kg`, top.x+8, top.y+14);
+      }
+
+    } else {
+      // power tab
+      const ys = points.map(p => p.Ppeak);
+      const yMin = 0;
+      const yMax = Math.max(...ys, 10) * 1.25;
+
+      drawAxes(pad,w,h,xMin,xMax,yMin,yMax,"Charge (kg)","Puissance pic (W)");
+
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent").trim();
+      ctx.fillStyle = accent;
+      points.forEach(p=>{
+        const pt = toXY(p.loadKg, p.Ppeak, pad,w,h,xMin,xMax,yMin,yMax);
+        ctx.beginPath();
+        ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI*2);
+        ctx.fill();
+      });
+    }
+  }
+
+  function refreshAll(){
+    refreshTable();
+
+    const oneRMp = estimate1RMProfile();
+    est1rmProfileEl.textContent = isFinite(oneRMp) ? `${oneRMp.toFixed(1)} kg` : "—";
+
+    drawChart();
+  }
+
+  // ---------- Buttons ----------
+  btnEnable.addEventListener("click", async () => {
+    try{
       await requestPermissionIfNeeded();
-      startListening();
-    } catch (e) {
-      console.error(e);
-      setStatus("bad", "Capteurs non autorisés / indisponibles");
-      alert("Impossible d'accéder aux capteurs. Sur iPhone : Safari + HTTPS + autoriser Mouvement & Orientation.");
+      enableSensors();
+      btnEnable.disabled = true;
+      setStatus(true, "Capteurs prêts");
+      btnStart.disabled = false;
+    }catch(err){
+      alert(err?.message || "Impossible d'activer les capteurs.");
+      setStatus(false, "Permission refusée");
     }
   });
 
-  btnStop.addEventListener("click", () => stopListening());
-  btnReset.addEventListener("click", () => resetAll());
-  btnExport.addEventListener("click", () => exportCSV());
+  btnStart.addEventListener("click", () => start());
+  btnStop.addEventListener("click", () => stop());
 
-  // Default status
-  setStatus("", "En attente");
+  btnEndRep.addEventListener("click", () => {
+    // manual end rep (only in manual mode)
+    if (repMode.value === "manual") endRep(performance.now(), true);
+  });
+
+  repMode.addEventListener("change", () => {
+    btnEndRep.disabled = !(running && repMode.value === "manual");
+  });
+
+  btnExport.addEventListener("click", exportCSV);
+  btnClear.addEventListener("click", () => {
+    if (confirm("Effacer toutes les répétitions ?")) clearAll();
+  });
+
+  // re-render when settings change
+  [rmMethod, loadKgEl, thrStartEl, thrStopEl, holdStopEl, dampingEl, calibVEl, v1rmEl].forEach(el=>{
+    el.addEventListener("change", refreshAll);
+    el.addEventListener("input", () => { if (el === calibVEl || el === v1rmEl) refreshAll(); });
+  });
+
+  function refreshAllSafely(){
+    try{ refreshAll(); }catch(e){}
+  }
+  window.addEventListener("resize", refreshAllSafely);
+
 })();
 </script>
 </body>

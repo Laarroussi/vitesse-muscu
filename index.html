@@ -3,611 +3,957 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>VBT Scientist — Jidovtseff Style</title>
+  <title>Vitesse muscu — VBT iPhone</title>
+
+  <!-- Chart.js (graphique) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
   <style>
     :root{
-      --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b;
-      --border:#e2e8f0; 
-      --vel:#2563eb; /* Bleu Vitesse */
-      --pow:#d97706; /* Or Puissance */
-      --ok:#22c55e; --bad:#ef4444;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg:#f6f7fb; --card:#ffffff; --text:#0b1020; --muted:#556070;
+      --border:#e6e8f0; --primary:#1e6bff; --danger:#c0392b; --ok:#2ecc71; --warn:#f1c40f;
+      --shadow: 0 10px 24px rgba(15,20,30,.08);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
     [data-theme="dark"]{
-      --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
-      --border:#334155; --vel:#60a5fa; --pow:#fbbf24;
+      --bg:#0b0d10; --card:#121722; --text:#e9eef5; --muted:#aab4c3;
+      --border:#243048; --shadow: 0 10px 24px rgba(0,0,0,.28);
     }
-    body{ margin:0; background:var(--bg); color:var(--text); -webkit-user-select:none; user-select:none; padding-bottom:120px; }
-    .wrap{ max-width:800px; margin:0 auto; padding:16px; }
-    
-    header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    h1{ margin:0; font-size:18px; font-weight:800; letter-spacing:-0.5px; }
-    .toggle{ font-size:20px; cursor:pointer; }
-
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
-
-    /* METRICS */
-    .big-metric{ text-align:center; padding:10px 0; }
-    .label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-weight:700; }
-    .val{ font-size:68px; font-weight:900; line-height:1; font-variant-numeric: tabular-nums; letter-spacing:-2px; color:var(--text); }
-    .unit{ font-size:18px; color:var(--muted); font-weight:500; }
-
-    /* BUTTONS */
+    body{ margin:0; background:var(--bg); color:var(--text); }
+    .wrap{ max-width: 980px; margin:0 auto; padding:14px; padding-bottom: 24px; }
+    h1{ font-size: 18px; margin:0 0 8px; font-weight:800; letter-spacing:-.02em; }
+    h2{ font-size: 14px; margin:0 0 10px; opacity:.9; }
+    .muted{ color:var(--muted); font-size: 12.5px; line-height:1.35; }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      padding:12px; box-shadow: var(--shadow); margin-top:12px;
+    }
+    .topbar{
+      display:grid; gap:10px;
+      grid-template-columns: 1fr;
+      position: sticky; top: 0; z-index: 5;
+      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0));
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: 8px;
+    }
+    .grid2{ display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
+    label{ display:block; font-size:12px; color:var(--muted); margin: 0 0 6px; }
+    input, select{
+      width:100%; box-sizing:border-box; border-radius:12px;
+      padding:10px 10px; font-size:14px;
+      background: transparent; color: var(--text);
+      border:1px solid var(--border); outline:none;
+    }
+    input:focus, select:focus{ border-color: var(--primary); }
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     button{
-      border:none; padding:14px; border-radius:12px;
-      font-size:15px; font-weight:700; cursor:pointer; transition: transform 0.1s;
-      display:flex; align-items:center; justify-content:center; gap:8px;
+      border:0; border-radius:12px; padding:10px 12px;
+      font-weight:750; font-size:14px; cursor:pointer;
+      color:white; background: var(--primary);
     }
-    button:active{ transform:scale(0.98); }
-    .btn-start{ background:var(--vel); color:white; width:100%; box-shadow:0 4px 12px rgba(37,99,235,0.2); }
-    .btn-valid{ background:var(--ok); color:white; flex:1; }
-    .btn-reject{ background:var(--card); border:2px solid var(--bad); color:var(--bad); flex:1; }
-    .btn-calc{ background:var(--text); color:var(--bg); width:100%; margin-top:10px; }
-    .btn-small{ background:transparent; border:1px solid var(--border); color:var(--muted); font-size:12px; padding:8px 12px; }
-
-    /* INPUTS */
-    select, input{
-      background:var(--bg); color:var(--text); border:1px solid var(--border);
-      padding:10px; border-radius:10px; width:100%; font-size:16px; box-sizing:border-box; outline:none;
+    button.secondary{ background: #2a3447; }
+    [data-theme="dark"] button.secondary{ background:#253047; }
+    button.danger{ background: var(--danger); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border); color: var(--muted); font-size:12px;
+      background: rgba(255,255,255,.55);
     }
+    [data-theme="dark"] .pill{ background: rgba(0,0,0,.25); }
+    .dot{ width:10px; height:10px; border-radius:50%; background:#9aa7bd; }
+    .dot.ok{ background: var(--ok); } .dot.warn{ background: var(--warn);} .dot.bad{ background:#e74c3c; }
 
-    /* OVERLAYS */
-    #validationOverlay {
-      position:fixed; bottom:0; left:0; width:100%;
-      background:var(--card); border-top:1px solid var(--border);
-      padding:24px; box-sizing:border-box; z-index:100;
-      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
-      transform: translateY(110%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .metricBig{
+      border:1px solid var(--border); border-radius:16px; padding:12px;
+      display:flex; justify-content:space-between; align-items:end; gap:10px;
     }
-    #validationOverlay.visible { transform: translateY(0); }
+    .metricBig .label{ font-size:12px; color:var(--muted); }
+    .metricBig .value{ font-size:44px; font-weight:900; letter-spacing:-.02em; line-height:1; }
+    .metricBig .unit{ font-size:14px; color:var(--muted); margin-left:6px; }
 
-    #cntOverlay {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:var(--bg); z-index:200;
-      display:none; align-items:center; justify-content:center; flex-direction:column;
+    .miniRow{ display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr; margin-top:10px; }
+    .mini{
+      border:1px solid var(--border); border-radius:14px; padding:10px;
     }
-    #cntVal { font-size:140px; font-weight:900; color:var(--text); }
-    #cntTxt { color:var(--muted); font-size:18px; text-transform:uppercase; letter-spacing:2px; }
+    .mini .l{ font-size:11.5px; color:var(--muted); }
+    .mini .v{ font-size:18px; font-weight:800; }
 
-    /* TABLE */
-    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
-    th { text-align:left; color:var(--muted); padding:8px 4px; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; }
-    td { padding:10px 4px; border-bottom:1px solid var(--border); }
-    .num { text-align:right; font-weight:600; font-variant-numeric: tabular-nums; }
-    
-    /* CHART */
-    .chart-box { position:relative; width:100%; height:320px; margin-top:15px; border:1px solid var(--border); border-radius:12px; background:var(--bg); }
-    canvas { width:100%; height:100%; display:block; }
+    details summary{ cursor:pointer; font-weight:800; }
+    details > div{ margin-top:10px; }
 
-    .status-pill { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; background:var(--border); color:var(--muted); }
-    .status-pill.active { background:#dbeafe; color:#2563eb; }
-    .status-pill.locked { background:#dcfce7; color:#16a34a; }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px; }
+    th, td{ border-bottom:1px solid var(--border); padding:9px 6px; text-align:left; }
+    th{ color:var(--muted); font-weight:800; }
+    .right{ text-align:right; }
 
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .controls-row { display:flex; gap:12px; margin-top:20px; }
-
-    /* RESULTS BOX */
-    #resultsBox {
-      display:none;
-      background: linear-gradient(135deg, var(--card) 0%, var(--bg) 100%);
-      border:1px solid var(--border); border-radius:12px; padding:15px; margin-top:15px;
+    .hint{ font-size:12px; color: var(--muted); }
+    .warnBox{
+      border:1px dashed var(--border); border-radius:14px; padding:10px; margin-top:10px;
+      color:var(--muted); font-size:12px;
     }
-    .res-row { display:flex; justify-content:space-between; margin-bottom:8px; align-items:center; }
-    .res-val { font-weight:800; font-size:18px; }
+    .rowActions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+
+    canvas{ width:100% !important; height:240px !important; }
   </style>
 </head>
+
 <body>
+  <div class="wrap" id="app" data-theme="light">
+    <div class="topbar">
+      <h1>Vitesse Muscu — VBT iPhone</h1>
 
-  <div id="cntOverlay">
-    <div id="cntTxt">Départ dans</div>
-    <div id="cntVal">3</div>
-  </div>
-
-  <div id="validationOverlay">
-    <div style="text-align:center;">
-      <div class="label">Résultat Fin de Mouvement</div>
-      <div style="font-size:48px; font-weight:900; margin:10px 0; color:var(--vel);" id="modalVal">0.00</div>
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
-        <div style="background:var(--bg); padding:10px; border-radius:8px;">
-          <div class="label">Puissance</div>
-          <div style="font-weight:700; color:var(--pow);" id="modalPower">0 W</div>
+      <div class="card" style="margin-top:0;">
+        <div class="grid2">
+          <div>
+            <label for="exercise">Exercice</label>
+            <select id="exercise">
+              <option value="bench">Développé couché</option>
+              <option value="squat">Back squat</option>
+              <option value="deadlift">Soulevé de terre (prudence)</option>
+              <option value="custom">Autre (MVT manuel)</option>
+            </select>
+          </div>
+          <div>
+            <label for="load">Charge totale (kg)</label>
+            <input id="load" type="number" value="20" step="2.5" min="0" />
+          </div>
         </div>
-        <div style="background:var(--bg); padding:10px; border-radius:8px;">
-          <div class="label">Accel Pic</div>
-          <div style="font-weight:700;" id="modalAcc">0g</div>
+
+        <div class="grid2" style="margin-top:10px;">
+          <div>
+            <label for="mvt">Vitesse 1RM (MVT, m/s)</label>
+            <input id="mvt" type="number" value="0.17" step="0.01" min="0.01" />
+          </div>
+          <div>
+            <label for="method">Méthode 1RM</label>
+            <select id="method">
+              <option value="mvt" selected>Profil charge–vitesse + MVT</option>
+              <option value="ch0">CH0 → 1RM (couché)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="start">Démarrer</button>
+          <button id="stop" class="secondary" disabled>Stop</button>
+          <span class="pill"><span id="sensorDot" class="dot"></span><span id="sensorText">En attente</span></span>
+          <button id="theme" class="secondary" style="margin-left:auto;">Thème</button>
+        </div>
+
+        <div class="warnBox">
+          iPhone : ça marche mieux sur <b>Safari</b> + <b>HTTPS</b>. Si le point reste rouge :
+          autorise “Mouvement & Orientation” (réglages Safari / site) puis recharge la page.
         </div>
       </div>
     </div>
-    <div class="controls-row">
-      <button class="btn-reject" id="btnReject">Rejeter</button>
-      <button class="btn-valid" id="btnValid">Valider</button>
-    </div>
-  </div>
 
-  <div class="wrap" id="app">
-    <header>
-      <h1>VBT Scientist</h1>
-      <div class="toggle" id="themeBtn">🌗</div>
-    </header>
-
+    <!-- LIVE -->
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div id="statusPill" class="status-pill">Prêt</div>
-        <select id="timerDelay" style="width:auto; padding:4px 20px 4px 8px; font-size:12px; height:26px;">
-          <option value="0">Direct</option>
-          <option value="3" selected>3s</option>
-          <option value="5">5s</option>
-          <option value="10">10s</option>
-        </select>
-      </div>
+      <h2>En direct</h2>
 
-      <div class="big-metric">
-        <div class="label">Vitesse Pic (m/s)</div>
-        <div class="val" id="dispV">0.00</div>
-      </div>
-
-      <button class="btn-start" id="btnStart">
-        <span>DÉMARRER SÉRIE</span>
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="grid-2" style="margin-bottom:15px;">
+      <div class="metricBig">
         <div>
-          <label class="label">Exercice</label>
-          <select id="exoSelect">
-            <option value="Bench">Bench Press</option>
-            <option value="Squat">Squat</option>
-            <option value="Deadlift">Deadlift</option>
-            <option value="Row">Rowing</option>
+          <div class="label">Vitesse pic (bloquée) — dernière rep</div>
+          <div><span class="value" id="vHold">0.00</span><span class="unit">m/s</span></div>
+        </div>
+        <div class="hint" style="text-align:right;">
+          Rep: <b id="repCount">0</b><br/>
+          État: <b id="repState">—</b>
+        </div>
+      </div>
+
+      <div class="miniRow">
+        <div class="mini">
+          <div class="l">Vitesse instantanée</div>
+          <div class="v"><span id="vLive">0.00</span> <span class="hint">m/s</span></div>
+        </div>
+        <div class="mini">
+          <div class="l">Accélération filtrée</div>
+          <div class="v"><span id="aLive">0.00</span> <span class="hint">m/s²</span></div>
+        </div>
+        <div class="mini">
+          <div class="l">Vitesse pic (pendant rep)</div>
+          <div class="v"><span id="vPeakLive">0.00</span> <span class="hint">m/s</span></div>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        La vitesse est une estimation basée sur l’accéléromètre. Pour améliorer : fixation rigide, axe stable, peu de vibrations.
+      </div>
+    </div>
+
+    <!-- PROPOSITION -->
+    <div class="card" id="proposal" style="display:none;">
+      <h2>Proposition (rep détectée)</h2>
+      <div class="miniRow">
+        <div class="mini"><div class="l">Vmoy</div><div class="v"><span id="p_vMean">—</span> <span class="hint">m/s</span></div></div>
+        <div class="mini"><div class="l">Vpic</div><div class="v"><span id="p_vPeak">—</span> <span class="hint">m/s</span></div></div>
+        <div class="mini"><div class="l">Apic</div><div class="v"><span id="p_aPeak">—</span> <span class="hint">m/s²</span></div></div>
+      </div>
+      <div class="miniRow" style="margin-top:10px;">
+        <div class="mini"><div class="l">Pmoy (approx)</div><div class="v"><span id="p_pMean">—</span> <span class="hint">W</span></div></div>
+        <div class="mini"><div class="l">Ppic (approx)</div><div class="v"><span id="p_pPeak">—</span> <span class="hint">W</span></div></div>
+        <div class="mini"><div class="l">Durée</div><div class="v"><span id="p_dur">—</span> <span class="hint">s</span></div></div>
+      </div>
+
+      <div class="rowActions">
+        <button id="accept">Valider la rep</button>
+        <button id="discard" class="secondary">Ignorer</button>
+      </div>
+
+      <div class="muted" style="margin-top:8px;">
+        Astuce : tu peux changer la charge avant la prochaine rep, puis valider.
+      </div>
+    </div>
+
+    <!-- CALCULS -->
+    <div class="card">
+      <h2>Calculs (1RM & puissance)</h2>
+      <div class="miniRow">
+        <div class="mini">
+          <div class="l">1RM estimée</div>
+          <div class="v"><span id="rm1">—</span> <span class="hint">kg</span></div>
+          <div class="hint" id="rm1Hint" style="margin-top:4px;">Ajoute ≥ 2 charges différentes</div>
+        </div>
+        <div class="mini">
+          <div class="l">Puissance max (Pmoy)</div>
+          <div class="v"><span id="pMaxMean">—</span> <span class="hint">W</span></div>
+          <div class="hint" id="pMaxMeanHint" style="margin-top:4px;">—</div>
+        </div>
+        <div class="mini">
+          <div class="l">Puissance max (Ppic)</div>
+          <div class="v"><span id="pMaxPeak">—</span> <span class="hint">W</span></div>
+          <div class="hint" id="pMaxPeakHint" style="margin-top:4px;">—</div>
+        </div>
+      </div>
+
+      <div class="warnBox" id="optBox" style="display:none;">
+        <b>Zone “optimale” (dev. couché)</b> (indicative) : Pmoy max souvent ~50–70% 1RM, Ppic ~15–35% 1RM :contentReference[oaicite:6]{index=6}
+        <div class="hint" style="margin-top:6px;">
+          Charge cible Pmoy: <b id="optMean">—</b> kg · Charge cible Ppic: <b id="optPeak">—</b> kg
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE + CHART -->
+    <details class="card" open>
+      <summary>Historique & graphique</summary>
+      <div>
+        <canvas id="chart"></canvas>
+
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="export" class="secondary">Exporter CSV</button>
+          <button id="reset" class="danger">Nouveau set (vider)</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>kg</th>
+              <th class="right">Vmoy</th>
+              <th class="right">Vpic</th>
+              <th class="right">Apic</th>
+              <th class="right">Pmoy</th>
+              <th class="right">Ppic</th>
+              <th class="right">%1RM</th>
+              <th class="right">s</th>
+              <th>heure</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="muted" style="margin-top:8px;">
+          Si tu veux une estimation 1RM plus robuste : fais 2–4 charges différentes, vitesse propre et répétitions “propres”.
+        </div>
+      </div>
+    </details>
+
+    <!-- ADVANCED -->
+    <details class="card">
+      <summary>Réglages avancés</summary>
+      <div class="grid2">
+        <div>
+          <label for="axisMode">Axe (puissance mieux si axe aligné)</label>
+          <select id="axisMode">
+            <option value="mag" selected>Magnitude (robuste)</option>
+            <option value="x">Axe X</option>
+            <option value="y">Axe Y</option>
+            <option value="z">Axe Z</option>
           </select>
         </div>
         <div>
-          <label class="label">Charge (kg)</label>
-          <input type="number" id="loadInput" value="40" step="2.5">
+          <label for="decayTau">Anti-dérive vitesse (s)</label>
+          <input id="decayTau" type="number" value="0.35" step="0.05" min="0.05" />
         </div>
       </div>
 
-      <button id="btnCalc" class="btn-calc" style="display:none;">
-        ⚡ Calculer Profil (1RM & P.Opt)
-      </button>
-
-      <div id="resultsBox">
-        <div class="res-row">
-          <span class="label" style="color:var(--text)">1RM Théorique (V=0)</span>
-          <span class="res-val" style="color:var(--vel)" id="res1RM">—</span>
+      <div class="grid2" style="margin-top:10px;">
+        <div>
+          <label for="startThr">Seuil début rep (m/s²)</label>
+          <input id="startThr" type="number" value="0.60" step="0.05" min="0" />
         </div>
-        <div class="res-row">
-          <span class="label" style="color:var(--text)">Puissance Max (P<sub>max</sub>)</span>
-          <span class="res-val" style="color:var(--pow)" id="resPmax">—</span>
-        </div>
-        <div class="res-row">
-          <span class="label" style="color:var(--text)">Charge Optimale (P<sub>opt</sub>)</span>
-          <span class="res-val" id="resLoadOpt">—</span>
+        <div>
+          <label for="stopThr">Seuil fin rep (m/s²)</label>
+          <input id="stopThr" type="number" value="0.25" step="0.05" min="0" />
         </div>
       </div>
 
-      <div class="chart-box">
-        <canvas id="chart"></canvas>
-      </div>
-      
-      <div style="margin-top:20px;">
-        <div class="label">Données Brutes</div>
-        <div style="overflow-x:auto;">
-          <table id="table">
-            <thead>
-              <tr>
-                <th>Kg</th>
-                <th class="num">V<sub>moy</sub></th>
-                <th class="num" style="color:var(--vel)">V<sub>pic</sub></th>
-                <th class="num">A<sub>pic</sub></th>
-                <th class="num" style="color:var(--pow)">Watt</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
+      <div class="grid2" style="margin-top:10px;">
+        <div>
+          <label for="stopHold">Temps bas pour finir (ms)</label>
+          <input id="stopHold" type="number" value="250" step="50" min="50" />
         </div>
-        <div style="text-align:center; margin-top:15px; display:flex; gap:10px; justify-content:center;">
-           <button class="btn-small" id="btnExport">CSV Export</button>
-           <button class="btn-small" style="color:var(--bad); border-color:var(--bad);" id="btnReset">Reset Tout</button>
+        <div>
+          <label for="alphaFast">Lissage motion (0–1)</label>
+          <input id="alphaFast" type="number" value="0.35" step="0.05" min="0.05" max="0.95" />
         </div>
       </div>
-    </div>
+
+      <div class="muted" style="margin-top:8px;">
+        Si ton iPhone déclenche trop tôt/trop tard : ajuste les seuils. Laisse 1–2 s immobile après “Démarrer”.
+      </div>
+    </details>
+
+    <p class="muted" style="margin-top:12px;">
+      Astuce iPhone : Safari → <b>Partager → Ajouter à l’écran d’accueil</b>.
+    </p>
   </div>
 
 <script>
-// --- CONFIGURATION ---
-const THRESHOLDS = { start: 0.6, stop: 0.25 };
-const HOLD_TIME = 250;
+(() => {
+  const $ = (id) => document.getElementById(id);
 
-// --- AUDIO ---
-const synth = window.speechSynthesis;
-let audioCtx = null;
-function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }
-function speak(t) { if(synth.speaking) synth.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='fr-FR'; u.rate=1.2; synth.speak(u); }
-function beep() {
-  if(!audioCtx) return;
-  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
-  o.type='sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime);
-  g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.2);
-  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.2);
-}
+  // UI
+  const app = $("app");
+  const exerciseEl = $("exercise");
+  const loadEl = $("load");
+  const mvtEl = $("mvt");
+  const methodEl = $("method");
 
-// --- STATE ---
-let state = {
-  listening: false, locked: false,
-  v: 0, vPeak: 0, aEMA: 0, aPeak: 0, vSum: 0, vCount: 0,
-  history: [], fit: null
-};
+  const startBtn = $("start");
+  const stopBtn = $("stop");
+  const themeBtn = $("theme");
 
-// --- DOM ---
-const $ = (id) => document.getElementById(id);
-const ui = {
-  dispV: $('dispV'), btnStart: $('btnStart'), btnValid: $('btnValid'), btnReject: $('btnReject'),
-  modal: $('validationOverlay'), status: $('statusPill'), cntOverlay: $('cntOverlay'), cntVal: $('cntVal'),
-  tbody: $('tbody'), chart: $('chart'), load: $('loadInput'), exo: $('exoSelect'), timerDelay: $('timerDelay'),
-  modalVal: $('modalVal'), modalPower: $('modalPower'), modalAcc: $('modalAcc'),
-  btnCalc: $('btnCalc'), resBox: $('resultsBox'),
-  res1RM: $('res1RM'), resPmax: $('resPmax'), resLoadOpt: $('resLoadOpt')
-};
+  const sensorDot = $("sensorDot");
+  const sensorText = $("sensorText");
 
-// --- SENSOR ---
-let lastT = null;
-let gSlow = 9.81;
+  const vHoldEl = $("vHold");
+  const vLiveEl = $("vLive");
+  const aLiveEl = $("aLive");
+  const vPeakLiveEl = $("vPeakLive");
+  const repCountEl = $("repCount");
+  const repStateEl = $("repState");
 
-function onMotion(e) {
-  if (state.locked || !state.listening) return;
+  const proposalCard = $("proposal");
+  const p_vMean = $("p_vMean");
+  const p_vPeak = $("p_vPeak");
+  const p_aPeak = $("p_aPeak");
+  const p_pMean = $("p_pMean");
+  const p_pPeak = $("p_pPeak");
+  const p_dur = $("p_dur");
+  const acceptBtn = $("accept");
+  const discardBtn = $("discard");
 
-  const now = performance.now();
-  if (!lastT) lastT = now;
-  const dt = (now - lastT) / 1000;
-  lastT = now;
-  if (dt > 0.1) return;
+  const rm1El = $("rm1");
+  const rm1Hint = $("rm1Hint");
+  const pMaxMeanEl = $("pMaxMean");
+  const pMaxMeanHint = $("pMaxMeanHint");
+  const pMaxPeakEl = $("pMaxPeak");
+  const pMaxPeakHint = $("pMaxPeakHint");
 
-  const acc = e.accelerationIncludingGravity;
-  if (!acc) return;
-  const raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+  const optBox = $("optBox");
+  const optMeanEl = $("optMean");
+  const optPeakEl = $("optPeak");
 
-  // Filter
-  gSlow = gSlow * 0.98 + raw * 0.02;
-  const aAbs = Math.abs(raw - gSlow);
-  state.aEMA = state.aEMA * 0.7 + aAbs * 0.3;
+  const tbody = $("tbody");
+  const exportBtn = $("export");
+  const resetBtn = $("reset");
 
-  // Integrate
-  state.v += (state.aEMA * dt);
-  state.v *= 0.96; 
-  if (state.v < 0) state.v = 0;
+  // Advanced
+  const axisModeEl = $("axisMode");
+  const decayTauEl = $("decayTau");
+  const startThrEl = $("startThr");
+  const stopThrEl = $("stopThr");
+  const stopHoldEl = $("stopHold");
+  const alphaFastEl = $("alphaFast");
 
-  // Live Peak
-  if (state.v > state.vPeak) {
-    state.vPeak = state.v;
-    ui.dispV.textContent = state.vPeak.toFixed(2);
+  // Presets (MVT indicatives)
+  const EX = {
+    bench: { mvt: 0.17, allowCH0: true, showOpt: true },   // valeur souvent utilisée en DC (Smith) :contentReference[oaicite:7]{index=7}
+    squat: { mvt: 0.30, allowCH0: false, showOpt: false }, // typiquement ~0.3 m/s :contentReference[oaicite:8]{index=8}
+    deadlift: { mvt: 0.20, allowCH0: false, showOpt: false }, // prudence :contentReference[oaicite:9]{index=9}
+    custom: { mvt: 0.20, allowCH0: false, showOpt: false }
+  };
+
+  // Storage
+  const KEY = "vbt_vitesse_muscu_v1";
+  function saveState() {
+    const state = {
+      theme: app.getAttribute("data-theme"),
+      exercise: exerciseEl.value,
+      load: loadEl.value,
+      mvt: mvtEl.value,
+      method: methodEl.value,
+      axisMode: axisModeEl.value,
+      decayTau: decayTauEl.value,
+      startThr: startThrEl.value,
+      stopThr: stopThrEl.value,
+      stopHold: stopHoldEl.value,
+      alphaFast: alphaFastEl.value,
+      rows
+    };
+    localStorage.setItem(KEY, JSON.stringify(state));
+  }
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s) return;
+      if (s.theme) app.setAttribute("data-theme", s.theme);
+      if (s.exercise) exerciseEl.value = s.exercise;
+      if (s.load) loadEl.value = s.load;
+      if (s.mvt) mvtEl.value = s.mvt;
+      if (s.method) methodEl.value = s.method;
+      if (s.axisMode) axisModeEl.value = s.axisMode;
+      if (s.decayTau) decayTauEl.value = s.decayTau;
+      if (s.startThr) startThrEl.value = s.startThr;
+      if (s.stopThr) stopThrEl.value = s.stopThr;
+      if (s.stopHold) stopHoldEl.value = s.stopHold;
+      if (s.alphaFast) alphaFastEl.value = s.alphaFast;
+      if (Array.isArray(s.rows)) {
+        rows.length = 0;
+        for (const r of s.rows) rows.push(r);
+      }
+    } catch {}
   }
 
-  // Collection for Mean
-  if (state.v > 0.05) {
-    state.vSum += state.v; state.vCount++;
-    if (state.aEMA > state.aPeak) state.aPeak = state.aEMA;
+  // Sensor status
+  let lastMotionAt = 0;
+  function setSensor(kind, text) {
+    sensorDot.className = "dot " + (kind || "");
+    sensorText.textContent = text;
   }
-
-  // Stop Logic
-  if (state.vPeak > 0.15 && state.aEMA < THRESHOLDS.stop) {
-    if (!state.stopTimer) state.stopTimer = now;
-    if (now - state.stopTimer > HOLD_TIME) lockRep();
-  } else {
-    state.stopTimer = null;
-  }
-}
-
-function lockRep() {
-  state.locked = true; state.listening = false;
-  const load = parseFloat(ui.load.value);
-  // Calculate Mean Velocity (Physically more accurate for Power)
-  const vMean = state.vCount > 5 ? (state.vSum / state.vCount) : state.vPeak * 0.7; 
-  const power = Math.round((load * 9.81) * vMean);
-  
-  state.temp = { load, vPeak: state.vPeak, vMean, aPeak: state.aPeak, p: power };
-
-  ui.modalVal.textContent = state.vPeak.toFixed(2);
-  ui.modalPower.textContent = power + " W";
-  ui.modalAcc.textContent = state.aPeak.toFixed(1) + "g";
-  ui.modal.classList.add('visible');
-  
-  ui.status.textContent = "Validation requise";
-  ui.status.className = "status-pill locked";
-  if(navigator.vibrate) navigator.vibrate(200);
-}
-
-// --- WORKFLOW ---
-function startSeq() {
-  initAudio();
-  const d = parseInt(ui.timerDelay.value);
-  if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
-    DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted') countdown(d);}).catch(alert);
-  } else countdown(d);
-}
-
-function countdown(sec) {
-  if (sec <= 0) { begin(); return; }
-  ui.cntOverlay.style.display='flex';
-  let t = sec;
-  ui.cntVal.textContent = t; speak(t);
-  const i = setInterval(() => {
-    t--;
-    if (t>0) { ui.cntVal.textContent=t; speak(t); }
-    else { clearInterval(i); ui.cntOverlay.style.display='none'; beep(); begin(); }
-  }, 1000);
-}
-
-function begin() {
-  state.v=0; state.vPeak=0; state.aEMA=0; state.aPeak=0; state.vSum=0; state.vCount=0;
-  state.locked=false; state.listening=true; lastT=null;
-  ui.dispV.textContent = "0.00";
-  ui.btnStart.disabled=true; ui.btnStart.textContent="Mesure en cours...";
-  ui.status.textContent="Mouvement"; ui.status.className="status-pill active";
-  window.addEventListener('devicemotion', onMotion, {passive:true});
-}
-
-function finalize(saveIt) {
-  ui.modal.classList.remove('visible');
-  window.removeEventListener('devicemotion', onMotion);
-  
-  if (saveIt && state.temp) {
-    state.history.push({ ...state.temp, exo: ui.exo.value });
-    updateTable();
-    checkCalcButton(); // Show button if enough data
-  }
-  
-  ui.btnStart.disabled=false; ui.btnStart.textContent="Démarrer Série";
-  ui.status.textContent="Prêt"; ui.status.className="status-pill";
-}
-
-ui.btnValid.onclick = () => finalize(true);
-ui.btnReject.onclick = () => finalize(false);
-ui.btnStart.onclick = startSeq;
-
-// --- MATHS & PROFILE CALC ---
-
-// Solve Linear: y = mx + c
-function leastSquares(x, y) {
-  const n = x.length;
-  let sumX=0, sumY=0, sumXY=0, sumXX=0;
-  for(let i=0; i<n; i++) {
-    sumX += x[i]; sumY += y[i];
-    sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
-  }
-  const m = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
-  const c = (sumY - m*sumX) / n;
-  return {m, c};
-}
-
-// Solve Quadratic: y = ax^2 + bx + c
-function solvePoly2(x, y) {
-  // Simplified Gaussian elimination for 3x3 matrix (Load^2, Load, 1)
-  let n = x.length;
-  let sX=0, sX2=0, sX3=0, sX4=0, sY=0, sXY=0, sX2Y=0;
-  for(let i=0; i<n; i++){
-    let xi = x[i], yi = y[i], x2=xi*xi;
-    sX+=xi; sX2+=x2; sX3+=x2*xi; sX4+=x2*x2;
-    sY+=yi; sXY+=xi*yi; sX2Y+=x2*yi;
-  }
-  // Matrix A = [[n, sX, sX2], [sX, sX2, sX3], [sX2, sX3, sX4]]
-  // Vector B = [sY, sXY, sX2Y]
-  // We need to find [c, b, a]
-  
-  // Determinant
-  const det = n*(sX2*sX4 - sX3*sX3) - sX*(sX*sX4 - sX3*sX2) + sX2*(sX*sX3 - sX2*sX2);
-  if(Math.abs(det) < 1e-9) return null;
-
-  const a = ((sY*(sX*sX3 - sX2*sX2) - sXY*(n*sX3 - sX2*sX) + sX2Y*(n*sX2 - sX*sX)) / det); // actually c in math terms if order reversed, but let's stick to ax^2+bx+c
-  // Manual Cramer's rule is tedious, let's use a simpler approx for JS without libraries?
-  // Actually, for VBT, Power is 0 at Load 0. So c=0. Model y = ax^2 + bx.
-  // This simplifies to solving 2 unknowns.
-  
-  // Model P = a*L^2 + b*L (Force through origin)
-  const det2 = sX2*sX4 - sX3*sX3;
-  if(Math.abs(det2) < 1e-9) return null;
-  const a_simple = (sXY*sX3 - sX2Y*sX2) / det2; // This is flawed logic for 2x2
-  
-  // Let's stick to standard 3 unknowns, hardcoded result of Cramer for 'a' (coeff of x^2)
-  // Re-eval A:
-  // D = det
-  // Da = n(sX2*sX2Y - sX3*sXY) - sX(sX*sX2Y - sX2*sXY) + sY(sX*sX3 - sX2*sX2) ... wait this is getting complex.
-  
-  // Fallback: Just loop through points and fit best parabola visually? No, requested calculation.
-  // Let's use standard formulas for a, b, c from determinant expansion.
-  // Solving for a (quadratic term):
-  const Da = sX2Y*(n*sX2 - sX*sX) + sXY*(sX*sX2 - n*sX3) + sY*(sX*sX3 - sX2*sX2); // Wait, order matters.
-  // Let's use the polyfit logic found in simple libraries:
-  // We will assume fitting.
-  
-  // Since implementing a full matrix solver in one file is risky, let's use the Vertex approximation.
-  // Optimal Load is roughly midway between max load and 0? No.
-  // Let's return null and just draw curve through points if < 3 points.
-  // If >=3 points, we do a simpler approximation:
-  // Find point with Max Power (P_peak_obs).
-  // Fit parabola through (0,0), (L_opt, P_max), (1RM, 0).
-  
-  // Okay, let's try the full determinant solution properly:
-  const m00=n, m01=sX, m02=sX2;
-  const m10=sX, m11=sX2, m12=sX3;
-  const m20=sX2, m21=sX3, m22=sX4;
-  const r0=sY, r1=sXY, r2=sX2Y;
-  
-  const D = m00*(m11*m22-m12*m21) - m01*(m10*m22-m12*m20) + m02*(m10*m21-m11*m20);
-  if(D===0) return null;
-  
-  const Da_ = r0*(m11*m22-m12*m21) - m01*(r1*m22-m12*r2) + m02*(r1*m21-m11*r2); // This is 'c' (intercept)
-  const Db = m00*(r1*m22-m12*r2) - r0*(m10*m22-m12*m20) + m02*(m10*r2-r1*m20); // This is 'b' (linear)
-  const Dc = m00*(m11*r2-r1*m21) - m01*(m10*r2-r1*m20) + r0*(m10*m21-m11*m20); // This is 'a' (quadratic)
-  
-  return { a: Dc/D, b: Db/D, c: Da_/D };
-}
-
-ui.btnCalc.onclick = () => {
-  const data = state.history.filter(h => h.exo === ui.exo.value);
-  if(data.length < 3) return alert("Il faut au moins 3 points pour un profil précis.");
-  
-  const xs = data.map(d => d.load);
-  const vs = data.map(d => d.vMean); // 1RM based on mean velocity
-  const ps = data.map(d => d.p);
-
-  // 1. Linear (Velocity)
-  const lin = leastSquares(xs, vs);
-  // Theoretical 1RM at V=0 (Physics) or V=MVT?
-  // Boris Jidovtseff often uses MVT intersection. Let's assume V=0 for "Theoretical Max" label.
-  const oneRM = -lin.c / lin.m;
-  
-  // 2. Polynomial (Power)
-  const poly = solvePoly2(xs, ps);
-  let pMax = 0, loadOpt = 0;
-  
-  if (poly && poly.a < 0) { // Must be concave down
-    loadOpt = -poly.b / (2 * poly.a);
-    pMax = poly.a*loadOpt*loadOpt + poly.b*loadOpt + poly.c;
-  } else {
-    // Fallback if fit fails (not a parabola): take max observed
-    const maxIdx = ps.indexOf(Math.max(...ps));
-    pMax = ps[maxIdx];
-    loadOpt = xs[maxIdx];
-  }
-
-  // Display
-  ui.res1RM.textContent = oneRM.toFixed(1) + " kg";
-  ui.resPmax.textContent = pMax.toFixed(0) + " W";
-  ui.resLoadOpt.textContent = loadOpt.toFixed(1) + " kg";
-  ui.resBox.style.display = 'block';
-
-  // Save fit for drawing
-  state.fit = { lin, poly, oneRM, loadOpt, pMax };
-  updateChart();
-};
-
-function checkCalcButton() {
-  const data = state.history.filter(h => h.exo === ui.exo.value);
-  if(data.length >= 3) ui.btnCalc.style.display = 'block';
-}
-
-// --- VISUALIZATION ---
-
-function updateTable() {
-  ui.tbody.innerHTML = state.history.slice().reverse().map(r => `
-    <tr>
-      <td>${r.load}</td>
-      <td class="num">${r.vMean.toFixed(2)}</td>
-      <td class="num" style="color:var(--vel)">${r.vPeak.toFixed(2)}</td>
-      <td class="num">${r.aPeak.toFixed(1)}</td>
-      <td class="num" style="color:var(--pow)">${r.p}</td>
-    </tr>
-  `).join('');
-}
-
-function updateChart() {
-  const ctx = ui.chart.getContext('2d');
-  const w = ui.chart.width = ui.chart.clientWidth;
-  const h = ui.chart.height = ui.chart.clientHeight;
-  const data = state.history.filter(h => h.exo === ui.exo.value);
-  
-  // Clear & Background
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
-  ctx.fillRect(0,0,w,h);
-  
-  if(data.length === 0) return;
-
-  // Scales
-  const xs = data.map(d=>d.load);
-  const maxLoad = state.fit ? Math.max(state.fit.oneRM, Math.max(...xs)) : Math.max(...xs);
-  const minLoad = Math.min(...xs) * 0.8;
-  const rangeX = (maxLoad - minLoad) || 10;
-  
-  // Dual Y
-  const maxV = 2.0; // Fixed sensible max for velocity
-  const maxP = Math.max(...data.map(d=>d.p), state.fit?.pMax || 0) * 1.2;
-
-  const toX = (x) => 40 + ((x - minX)/rangeX) * (w-80);
-  const toY_V = (v) => h - 30 - (v / maxV) * (h-60);
-  const toY_P = (p) => h - 30 - (p / maxP) * (h-60);
-
-  // Grid
-  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border');
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  // Horizontal grid (4 lines)
-  for(let i=0; i<=4; i++) {
-    let y = h - 30 - (i/4)*(h-60);
-    ctx.moveTo(40, y); ctx.lineTo(w-40, y);
-  }
-  ctx.stroke();
-
-  // Axis Labels
-  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--muted');
-  ctx.font = "10px sans-serif";
-  ctx.fillText("0 m/s", 5, h-30); ctx.fillText(maxV+" m/s", 5, 30); // Left
-  ctx.textAlign = "right";
-  ctx.fillText("0 W", w-5, h-30); ctx.fillText(maxP.toFixed(0)+" W", w-5, 30); // Right
-  
-  // 1. Draw Linear Fit (Velocity) - BLUE
-  if (state.fit && state.fit.lin) {
-    ctx.beginPath();
-    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--vel');
-    ctx.lineWidth = 2;
-    const y1 = state.fit.lin.m * minLoad + state.fit.lin.c;
-    const y2 = state.fit.lin.m * state.fit.oneRM + state.fit.lin.c; // Should be 0
-    ctx.moveTo(toX(minLoad), toY_V(y1));
-    ctx.lineTo(toX(state.fit.oneRM), toY_V(y2));
-    ctx.stroke();
-    
-    // 1RM Dot
-    ctx.beginPath(); ctx.fillStyle = 'red';
-    ctx.arc(toX(state.fit.oneRM), toY_V(0), 4, 0, Math.PI*2); ctx.fill();
-    ctx.fillText("1RM", toX(state.fit.oneRM), toY_V(0)-10);
-  }
-
-  // 2. Draw Polynomial Fit (Power) - ORANGE
-  if (state.fit && state.fit.poly) {
-    ctx.beginPath();
-    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--pow');
-    ctx.lineWidth = 2;
-    for (let x = minLoad; x <= state.fit.oneRM; x += rangeX/50) {
-      const y = state.fit.poly.a*x*x + state.fit.poly.b*x + state.fit.poly.c;
-      if(y < 0) continue;
-      const px = toX(x), py = toY_P(y);
-      if (x===minLoad) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+  setInterval(() => {
+    if (!listening) {
+      setSensor("", "En attente");
+      return;
     }
-    ctx.stroke();
-    
-    // Optimal Load Dot
-    ctx.beginPath(); ctx.fillStyle = 'orange';
-    ctx.arc(toX(state.fit.loadOpt), toY_P(state.fit.pMax), 5, 0, Math.PI*2); ctx.fill();
+    const age = performance.now() - lastMotionAt;
+    if (age < 900) setSensor("ok", "Capteurs actifs");
+    else setSensor("bad", "Capteurs inactifs");
+  }, 400);
+
+  // Data
+  const rows = []; // validated rows
+  let repCount = 0;
+
+  // Proposal (not yet saved)
+  let proposal = null;
+
+  // Motion processing
+  let listening = false;
+  let lastT = null;
+
+  let gSlow = 9.81;
+  let aEMA = 0;
+  let v = 0;
+  let vPeakLive = 0;
+
+  // Rep detection
+  let inRep = false;
+  let belowSince = null;
+  let repStartT = null;
+  let repV = [];
+  let repA = [];
+
+  // Chart
+  let chart = null;
+
+  function clampDt(dt){
+    if (!isFinite(dt) || dt <= 0) return 0.016;
+    return Math.max(0.002, Math.min(0.08, dt));
   }
 
-  // 3. Draw Raw Points
-  data.forEach(d => {
-    // Vel (Blue Square)
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--vel');
-    const xv = toX(d.load), yv = toY_V(d.vMean);
-    ctx.fillRect(xv-3, yv-3, 6, 6);
+  function params(){
+    return {
+      START_THR: parseFloat(startThrEl.value) || 0.60,
+      STOP_THR: parseFloat(stopThrEl.value) || 0.25,
+      STOP_HOLD_MS: parseInt(stopHoldEl.value, 10) || 250,
+      DECAY_TAU: Math.max(0.05, parseFloat(decayTauEl.value) || 0.35),
+      ALPHA_SLOW: 0.02,
+      ALPHA_FAST: Math.min(0.95, Math.max(0.05, parseFloat(alphaFastEl.value) || 0.35))
+    };
+  }
 
-    // Pow (Orange Circle)
-    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--pow');
-    const xp = toX(d.load), yp = toY_P(d.p);
-    ctx.beginPath(); ctx.arc(xp, yp, 4, 0, Math.PI*2); ctx.fill();
+  function readAccel(evt){
+    const a = evt.acceleration;
+    const ag = evt.accelerationIncludingGravity;
+
+    let ax=null, ay=null, az=null;
+    if (a && (a.x!==null || a.y!==null || a.z!==null)) { ax=a.x; ay=a.y; az=a.z; }
+    else if (ag && (ag.x!==null || ag.y!==null || ag.z!==null)) { ax=ag.x; ay=ag.y; az=ag.z; }
+    else return null;
+
+    if (ax===null || ay===null || az===null) return null;
+
+    const mode = axisModeEl.value;
+    let raw;
+    if (mode==="mag") raw = Math.sqrt(ax*ax + ay*ay + az*az);
+    else if (mode==="x") raw = ax;
+    else if (mode==="y") raw = ay;
+    else raw = az;
+
+    return { raw };
+  }
+
+  function startRep(now){
+    inRep = true;
+    repCount++;
+    repCountEl.textContent = String(repCount);
+    repStateEl.textContent = "EN REP";
+    repStartT = now;
+    belowSince = null;
+    repV = [];
+    repA = [];
+    v = 0;
+    vPeakLive = 0;
+    vPeakLiveEl.textContent = "0.00";
+  }
+
+  function endRep(now){
+    inRep = false;
+    repStateEl.textContent = "—";
+    belowSince = null;
+
+    if (repV.length < 6) { repV=[]; repA=[]; v=0; aEMA=0; return; }
+
+    const vMean = repV.reduce((s,x)=>s+x,0) / repV.length;
+    const vPeak = Math.max(...repV);
+    const aPeak = Math.max(...repA);
+    const dur = (now - repStartT) / 1000;
+
+    const load = parseFloat(loadEl.value) || 0;
+    const pMean = load * 9.81 * vMean;
+    const pPeak = load * 9.81 * vPeak;
+
+    proposal = {
+      rep: repCount, load, vMean, vPeak, aPeak, pMean, pPeak, dur,
+      iso: new Date().toISOString()
+    };
+
+    // UI proposal
+    p_vMean.textContent = vMean.toFixed(2);
+    p_vPeak.textContent = vPeak.toFixed(2);
+    p_aPeak.textContent = aPeak.toFixed(2);
+    p_pMean.textContent = Math.round(pMean).toString();
+    p_pPeak.textContent = Math.round(pPeak).toString();
+    p_dur.textContent = dur.toFixed(2);
+
+    // Freeze hold to best speed of rep
+    vHoldEl.textContent = vPeak.toFixed(2);
+
+    proposalCard.style.display = "block";
+
+    // reset integrators for next rep
+    repV = []; repA = [];
+    v = 0; aEMA = 0;
+  }
+
+  function acceptProposal(){
+    if (!proposal) return;
+    rows.push(proposal);
+    proposal = null;
+    proposalCard.style.display = "none";
+    renderAll();
+    saveState();
+  }
+
+  function discardProposal(){
+    proposal = null;
+    proposalCard.style.display = "none";
+    saveState();
+  }
+
+  function linearRegression(points){
+    // points: [{x, y}]
+    const n = points.length;
+    if (n < 2) return null;
+
+    const xs = points.map(p=>p.x);
+    const ys = points.map(p=>p.y);
+    const xMean = xs.reduce((a,b)=>a+b,0)/n;
+    const yMean = ys.reduce((a,b)=>a+b,0)/n;
+
+    let num=0, den=0;
+    for (let i=0;i<n;i++){
+      const dx = xs[i]-xMean;
+      num += dx*(ys[i]-yMean);
+      den += dx*dx;
+    }
+    if (den === 0) return null;
+
+    const b = num/den;           // slope
+    const a = yMean - b*xMean;   // intercept
+
+    // R2
+    let ssTot=0, ssRes=0;
+    for (let i=0;i<n;i++){
+      const yHat = a + b*xs[i];
+      ssTot += (ys[i]-yMean)**2;
+      ssRes += (ys[i]-yHat)**2;
+    }
+    const r2 = (ssTot===0) ? 0 : (1 - ssRes/ssTot);
+    return { a, b, r2 };
+  }
+
+  function compute1RM(){
+    // Use distinct loads only (avoid duplicates bias)
+    const pts = [];
+    const seen = new Set();
+    for (const r of rows){
+      const key = r.load.toFixed(2);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      pts.push({ x: r.load, y: r.vMean });
+    }
+    if (pts.length < 2) return null;
+
+    const reg = linearRegression(pts);
+    if (!reg) return null;
+
+    // v = a + b*load  (b should be negative)
+    if (!(reg.b < 0)) return null;
+
+    const mvt = Math.max(0.01, parseFloat(mvtEl.value) || 0.17);
+    const method = methodEl.value;
+
+    const CH0 = -reg.a / reg.b; // load at v=0
+    let rm1 = null;
+    let info = "";
+
+    if (method === "ch0") {
+      if (exerciseEl.value !== "bench") return null;
+      // Thèse Jidovtseff : 1RM = 0.8946*CH0 + 7.2831 (dev couché) :contentReference[oaicite:10]{index=10}
+      rm1 = 0.8946 * CH0 + 7.2831;
+      info = `CH0=${CH0.toFixed(1)}kg, R²=${reg.r2.toFixed(2)}`;
+    } else {
+      // MVT method
+      rm1 = (mvt - reg.a) / reg.b;
+      info = `R²=${reg.r2.toFixed(2)}, MVT=${mvt.toFixed(2)} m/s`;
+    }
+
+    if (!isFinite(rm1) || rm1 <= 0) return null;
+    return { rm1, reg, CH0, info };
+  }
+
+  function renderTable(rm1Obj){
+    tbody.innerHTML = "";
+    for (const r of rows){
+      const pct = rm1Obj ? (100 * (r.load / rm1Obj.rm1)) : null;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.rep}</td>
+        <td>${r.load.toFixed(1)}</td>
+        <td class="right">${r.vMean.toFixed(2)}</td>
+        <td class="right">${r.vPeak.toFixed(2)}</td>
+        <td class="right">${r.aPeak.toFixed(2)}</td>
+        <td class="right">${Math.round(r.pMean)}</td>
+        <td class="right">${Math.round(r.pPeak)}</td>
+        <td class="right">${pct ? pct.toFixed(0) : "—"}</td>
+        <td class="right">${r.dur.toFixed(2)}</td>
+        <td>${r.iso.replace("T"," ").replace("Z","")}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderChart(rm1Obj){
+    const ctx = $("chart");
+    const ptsVel = rows.map(r => ({ x: r.load, y: r.vMean }));
+    const ptsPow = rows.map(r => ({ x: r.load, y: r.pMean }));
+
+    // regression line (velocity)
+    let line = [];
+    if (rm1Obj && rm1Obj.reg){
+      const loads = rows.map(r=>r.load);
+      const minX = Math.min(...loads);
+      const maxX = Math.max(...loads);
+      const a = rm1Obj.reg.a, b = rm1Obj.reg.b;
+      const steps = 20;
+      for (let i=0;i<=steps;i++){
+        const x = minX + (maxX-minX)*(i/steps);
+        line.push({ x, y: a + b*x });
+      }
+    }
+
+    // 1RM point on chart (at MVT)
+    let rmPoint = [];
+    if (rm1Obj){
+      const mvt = Math.max(0.01, parseFloat(mvtEl.value) || 0.17);
+      rmPoint = [{ x: rm1Obj.rm1, y: mvt }];
+    }
+
+    const data = {
+      datasets: [
+        { label: "Vmoy (m/s)", data: ptsVel, parsing:false, yAxisID:"yV", showLine:false, pointRadius:4 },
+        { label: "Régression Vmoy", data: line, parsing:false, yAxisID:"yV", showLine:true, pointRadius:0, borderWidth:2 },
+        { label: "Pmoy (W)", data: ptsPow, parsing:false, yAxisID:"yP", showLine:false, pointRadius:4 },
+        { label: "Point 1RM (MVT)", data: rmPoint, parsing:false, yAxisID:"yV", showLine:false, pointRadius:6 }
+      ]
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true }
+      },
+      scales: {
+        x: { title: { display:true, text:"Charge (kg)" } },
+        yV: { position:"left", title:{ display:true, text:"Vitesse (m/s)" } },
+        yP: { position:"right", title:{ display:true, text:"Puissance (W)" }, grid:{ drawOnChartArea:false } }
+      }
+    };
+
+    if (!chart){
+      chart = new Chart(ctx, { type:"scatter", data, options });
+    } else {
+      chart.data = data;
+      chart.options = options;
+      chart.update();
+    }
+  }
+
+  function renderSummary(rm1Obj){
+    if (!rm1Obj){
+      rm1El.textContent = "—";
+      rm1Hint.textContent = "Ajoute ≥ 2 charges différentes";
+    } else {
+      rm1El.textContent = rm1Obj.rm1.toFixed(1);
+      rm1Hint.textContent = rm1Obj.info;
+    }
+
+    // Power max
+    if (!rows.length){
+      pMaxMeanEl.textContent = "—"; pMaxMeanHint.textContent = "—";
+      pMaxPeakEl.textContent = "—"; pMaxPeakHint.textContent = "—";
+      optBox.style.display = "none";
+      return;
+    }
+    const bestMean = rows.reduce((a,b)=> (b.pMean > a.pMean ? b : a), rows[0]);
+    const bestPeak = rows.reduce((a,b)=> (b.pPeak > a.pPeak ? b : a), rows[0]);
+
+    pMaxMeanEl.textContent = String(Math.round(bestMean.pMean));
+    pMaxMeanHint.textContent = `${bestMean.load.toFixed(1)} kg · Vmoy ${bestMean.vMean.toFixed(2)} m/s`;
+
+    pMaxPeakEl.textContent = String(Math.round(bestPeak.pPeak));
+    pMaxPeakHint.textContent = `${bestPeak.load.toFixed(1)} kg · Vpic ${bestPeak.vPeak.toFixed(2)} m/s`;
+
+    // Bench-only "optimal zones" from thesis
+    const ex = exerciseEl.value;
+    const showOpt = (ex==="bench") && rm1Obj;
+    if (showOpt){
+      optBox.style.display = "block";
+      const rm1 = rm1Obj.rm1;
+
+      // Pmoy: 50–70% 1RM ; Ppic: 15–35% 1RM :contentReference[oaicite:11]{index=11}
+      const meanMin = 0.50*rm1, meanMax = 0.70*rm1;
+      const peakMin = 0.15*rm1, peakMax = 0.35*rm1;
+
+      optMeanEl.textContent = `${meanMin.toFixed(1)}–${meanMax.toFixed(1)}`;
+      optPeakEl.textContent = `${peakMin.toFixed(1)}–${peakMax.toFixed(1)}`;
+    } else {
+      optBox.style.display = "none";
+    }
+  }
+
+  function renderAll(){
+    // Update repCount in case
+    repCountEl.textContent = String(repCount);
+
+    const rm1Obj = compute1RM();
+    renderSummary(rm1Obj);
+    renderTable(rm1Obj);
+    renderChart(rm1Obj);
+  }
+
+  function exportCSV(){
+    if (!rows.length) return;
+    const header = ["rep","load_kg","v_mean_ms","v_peak_ms","a_peak_ms2","p_mean_w","p_peak_w","duration_s","timestamp_iso"];
+    const lines = [header.join(",")];
+    for (const r of rows){
+      lines.push([
+        r.rep,
+        r.load.toFixed(2),
+        r.vMean.toFixed(4),
+        r.vPeak.toFixed(4),
+        r.aPeak.toFixed(4),
+        r.pMean.toFixed(2),
+        r.pPeak.toFixed(2),
+        r.dur.toFixed(4),
+        r.iso
+      ].join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vbt_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
+    document.body.appendChild(a);
+    a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }
+
+  function resetAll(){
+    rows.length = 0;
+    repCount = 0;
+    proposal = null;
+    proposalCard.style.display = "none";
+    vHoldEl.textContent = "0.00";
+    vLiveEl.textContent = "0.00";
+    aLiveEl.textContent = "0.00";
+    vPeakLiveEl.textContent = "0.00";
+    repStateEl.textContent = "—";
+    renderAll();
+    saveState();
+  }
+
+  function onMotion(evt){
+    lastMotionAt = performance.now();
+
+    const now = performance.now();
+    if (lastT === null) lastT = now;
+    const dt = clampDt((now-lastT)/1000);
+    lastT = now;
+
+    const acc = readAccel(evt);
+    if (!acc) return;
+
+    const p = params();
+
+    // baseline + high-pass
+    gSlow = (1 - p.ALPHA_SLOW) * gSlow + p.ALPHA_SLOW * acc.raw;
+    const aHP = acc.raw - gSlow;
+    const aAbs = Math.abs(aHP);
+
+    // smooth motion
+    aEMA = (1 - p.ALPHA_FAST) * aEMA + p.ALPHA_FAST * aAbs;
+
+    // integrate speed with anti-drift
+    const decay = Math.exp(-dt / p.DECAY_TAU);
+    v = v * decay + aEMA * dt;
+    if (v < 0) v = 0;
+
+    // live display
+    aLiveEl.textContent = aEMA.toFixed(2);
+    vLiveEl.textContent = v.toFixed(2);
+
+    if (inRep){
+      repV.push(v);
+      repA.push(aEMA);
+      if (v > vPeakLive){
+        vPeakLive = v;
+        vPeakLiveEl.textContent = vPeakLive.toFixed(2);
+      }
+      if (aEMA < p.STOP_THR){
+        if (belowSince === null) belowSince = now;
+        if ((now - belowSince) > p.STOP_HOLD_MS) endRep(now);
+      } else belowSince = null;
+    } else {
+      if (proposal) return; // wait user validate/ignore
+      if (aEMA > p.START_THR) startRep(now);
+    }
+  }
+
+  async function requestPermissionIfNeeded(){
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function"){
+      const resp = await DeviceMotionEvent.requestPermission();
+      if (resp !== "granted") throw new Error("Permission refusée");
+    }
+  }
+
+  function startListening(){
+    if (listening) return;
+    window.addEventListener("devicemotion", onMotion, { passive:true });
+    listening = true;
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    // reset
+    lastT = null; aEMA = 0; v = 0; vPeakLive = 0; gSlow = 9.81;
+    vLiveEl.textContent = "0.00"; aLiveEl.textContent = "0.00"; vPeakLiveEl.textContent = "0.00";
+    repStateEl.textContent = "—";
+    saveState();
+  }
+
+  function stopListening(){
+    if (!listening) return;
+    window.removeEventListener("devicemotion", onMotion);
+    listening = false;
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+
+    // reset rep state
+    inRep = false; belowSince = null; repV=[]; repA=[]; lastT=null; aEMA=0; v=0; vPeakLive=0;
+    repStateEl.textContent = "—";
+    saveState();
+  }
+
+  // Events
+  startBtn.addEventListener("click", async () => {
+    try{
+      setSensor("warn","Demande autorisation…");
+      await requestPermissionIfNeeded();
+      startListening();
+    }catch(e){
+      console.error(e);
+      setSensor("bad","Capteurs non autorisés");
+      alert("Capteurs indisponibles. iPhone : Safari + HTTPS + autoriser Mouvement & Orientation.");
+    }
   });
-}
+  stopBtn.addEventListener("click", stopListening);
 
-// --- UTILS ---
-$('themeBtn').onclick = () => {
-  const next = $('app').getAttribute('data-theme')==='dark'?'light':'dark';
-  $('app').setAttribute('data-theme', next);
-  updateChart();
-};
-$('btnReset').onclick = () => { if(confirm('Reset?')) {state.history=[]; state.fit=null; ui.btnCalc.style.display='none'; ui.resBox.style.display='none'; updateTable(); updateChart();} };
-$('btnExport').onclick = () => {
-  const csv = "Load,Vmean,Vpeak,Apeak,Power\n"+state.history.map(r=>`${r.load},${r.vMean},${r.vPeak},${r.aPeak},${r.p}`).join('\n');
-  const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURI(csv); a.download='vbt_export.csv'; a.click();
-};
+  themeBtn.addEventListener("click", () => {
+    const t = app.getAttribute("data-theme")==="dark" ? "light" : "dark";
+    app.setAttribute("data-theme", t);
+    saveState();
+  });
 
+  acceptBtn.addEventListener("click", acceptProposal);
+  discardBtn.addEventListener("click", discardProposal);
+
+  exportBtn.addEventListener("click", exportCSV);
+  resetBtn.addEventListener("click", resetAll);
+
+  // Exercise changes
+  function applyExercisePreset(){
+    const ex = EX[exerciseEl.value] || EX.custom;
+    mvtEl.value = String(ex.mvt);
+    methodEl.value = "mvt";
+    methodEl.disabled = !ex.allowCH0 ? false : false; // keep enabled; we’ll guard in compute
+    if (exerciseEl.value !== "bench") {
+      // CH0 option still visible but compute will return null if not bench
+      // Keeps UI simple
+    }
+    renderAll();
+    saveState();
+  }
+  exerciseEl.addEventListener("change", applyExercisePreset);
+
+  // Re-render on settings change
+  [loadEl, mvtEl, methodEl, axisModeEl, decayTauEl, startThrEl, stopThrEl, stopHoldEl, alphaFastEl]
+    .forEach(el => el.addEventListener("change", () => { renderAll(); saveState(); }));
+
+  // Init
+  loadState();
+  applyExercisePreset(); // also renders
+  renderAll();
+})();
 </script>
 </body>
 </html>

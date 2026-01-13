@@ -2,753 +2,391 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Vitesse Muscu — iPhone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Vitesse Muscu — Simple</title>
   <style>
-    :root{
-      --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#475569;
-      --border:#e2e8f0; --accent:#2563eb; --accent2:#0ea5e9;
-      --bad:#dc2626; --warn:#f59e0b; --ok:#16a34a;
-      --shadow:0 10px 24px rgba(2,6,23,.08);
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    :root {
+      --bg: #000000; --card: #1c1c1e; --text: #ffffff;
+      --accent: #0a84ff; --success: #30d158; --danger: #ff453a; --muted: #8e8e93;
+      --border: #38383a;
     }
-    [data-theme="dark"]{
-      --bg:#0b0d10; --card:#121722; --text:#e9eef5; --muted:#9aa7bd;
-      --border:#263249; --accent:#1e6bff; --accent2:#7fb0ff;
-      --shadow:0 10px 30px rgba(0,0,0,.25);
+    body {
+      margin: 0; padding: 20px 16px;
+      background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      text-align: center;
+      padding-bottom: 50px;
     }
-    body{ margin:0; background:var(--bg); color:var(--text); }
-    .wrap{ max-width:980px; margin:0 auto; padding:16px; }
-    h1{ font-size:18px; margin:0 0 10px; font-weight:800; letter-spacing:-.01em; }
-    .muted{ color:var(--muted); font-size:13px; line-height:1.35; }
-    .row{ display:grid; gap:12px; grid-template-columns:1fr; }
-    @media (min-width:820px){ .row{ grid-template-columns:1.2fr .8fr; } }
-    .card{
-      background:var(--card); border:1px solid var(--border);
-      border-radius:16px; padding:14px; box-shadow:var(--shadow);
-    }
-    label{ display:block; font-size:12px; color:var(--muted); margin:0 0 6px; }
-    input,select{
-      width:100%; box-sizing:border-box; border:1px solid var(--border);
-      border-radius:12px; padding:10px 12px; font-size:14px;
-      background:transparent; color:var(--text); outline:none;
-    }
-    input:focus,select:focus{ border-color:var(--accent2); }
-    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
-    button{
-      border:0; border-radius:12px; padding:10px 12px;
-      font-weight:750; cursor:pointer; font-size:14px;
-      background:var(--accent); color:white;
-    }
-    button.secondary{ background:transparent; color:var(--text); border:1px solid var(--border); }
-    button.danger{ background:var(--bad); }
-    button:disabled{ opacity:.55; cursor:not-allowed; }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:12px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border); color:var(--muted);
-    }
-    .dot{ width:10px; height:10px; border-radius:50%; background:#94a3b8; }
-    .dot.ok{ background:var(--ok); }
-    .dot.warn{ background:var(--warn); }
-    .dot.bad{ background:var(--bad); }
 
-    .metric{
-      border:1px solid var(--border);
-      border-radius:16px; padding:12px;
+    /* --- LAYOUT --- */
+    h1 { font-size: 16px; font-weight: 600; color: var(--muted); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+    
+    .main-display {
+      margin: 20px 0;
     }
-    .metric .k{ font-size:12px; color:var(--muted); }
-    .metric .v{ font-size:44px; font-weight:900; letter-spacing:-.02em; }
-    .metric .u{ font-size:14px; color:var(--muted); margin-left:6px; }
-    .grid2{ display:grid; gap:10px; grid-template-columns:1fr 1fr; }
-    .grid3{ display:grid; gap:10px; grid-template-columns:1fr; }
-    @media(min-width:620px){ .grid3{ grid-template-columns:1fr 1fr 1fr; } }
+    .value-box {
+      font-size: 72px; font-weight: 800;
+      line-height: 1; font-variant-numeric: tabular-nums;
+      margin-bottom: 5px;
+    }
+    .label-box { font-size: 18px; color: var(--muted); }
+    
+    .status-pill {
+      display: inline-block; padding: 6px 12px;
+      border-radius: 20px; font-size: 13px; font-weight: 600;
+      background: var(--card); color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .status-pill.active { background: rgba(10, 132, 255, 0.2); color: var(--accent); }
+    .status-pill.done { background: rgba(48, 209, 88, 0.2); color: var(--success); }
 
-    details{ border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
-    summary{ cursor:pointer; font-weight:700; color:var(--text); }
-    summary::marker{ color:var(--muted); }
+    /* --- CONTROLS --- */
+    .controls {
+      background: var(--card); border-radius: 20px; padding: 20px;
+      margin-bottom: 20px; border: 1px solid var(--border);
+    }
+    .input-row { display: flex; gap: 10px; margin-bottom: 15px; }
+    .input-group { flex: 1; }
+    label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 4px; text-align: left; }
+    input, select {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      color: white; padding: 10px; border-radius: 10px; font-size: 16px;
+      text-align: center; box-sizing: border-box;
+    }
 
-    table{ width:100%; border-collapse:collapse; margin-top:10px; }
-    th,td{ border-bottom:1px solid var(--border); padding:10px 8px; text-align:left; font-size:13px; }
-    th{ color:var(--muted); font-weight:800; }
-    .right{ text-align:right; }
-    .small{ font-size:12px; color:var(--muted); }
-    .topbar{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; }
+    /* --- BUTTONS --- */
+    button {
+      width: 100%; padding: 16px; border-radius: 14px; border: none;
+      font-size: 17px; font-weight: 700; cursor: pointer;
+      transition: transform 0.1s;
+    }
+    button:active { transform: scale(0.96); }
+    
+    .btn-start { background: var(--accent); color: white; }
+    .btn-valid { background: var(--success); color: black; margin-bottom: 10px; }
+    .btn-discard { background: var(--card); color: var(--danger); border: 1px solid var(--border); }
+    .hidden { display: none !important; }
+
+    /* --- GRAPH & TABLE --- */
+    .chart-container {
+      background: var(--card); border-radius: 16px; padding: 15px;
+      margin-bottom: 20px; border: 1px solid var(--border);
+    }
+    canvas { width: 100%; height: 200px; display: block; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+    th { color: var(--muted); text-align: left; padding: 8px; border-bottom: 1px solid var(--border); }
+    td { padding: 8px; border-bottom: 1px solid var(--border); text-align: left; }
+    .num { text-align: right; }
+
+    .instructions { font-size: 12px; color: var(--muted); margin-top: 30px; line-height: 1.4; }
   </style>
 </head>
-
 <body>
-  <div class="wrap" id="app">
-    <div class="topbar">
-      <h1>Vitesse Muscu (iPhone) — capteurs</h1>
-      <button id="btnTheme" class="secondary" type="button">Thème</button>
-    </div>
 
-    <p class="muted">
-      1) Fixe le téléphone sur la charge / barre. 2) <b>Démarrer</b> → autoriser capteurs. 3) Fais une rep.
-      À la fin, les métriques apparaissent en “Dernière rep” → <b>Valider</b> pour l’enregistrer.
-    </p>
+  <h1>Vitesse Muscu</h1>
 
-    <div class="row">
-      <div class="card">
-        <div class="btnRow" style="margin-bottom:10px;">
-          <button id="btnStart" type="button">Démarrer</button>
-          <button id="btnStop" class="secondary" type="button" disabled>Stop</button>
-          <span class="pill"><span id="statusDot" class="dot"></span><span id="statusText">En attente</span></span>
-          <span class="pill">Rep : <b id="repCount">0</b></span>
-        </div>
+  <div id="statusPill" class="status-pill">En attente</div>
 
-        <div class="metric">
-          <div class="k">Vitesse instantanée (scalaire, approx.)</div>
-          <div><span class="v" id="vLive">0.00</span><span class="u">m/s</span></div>
-        </div>
+  <div class="main-display">
+    <div id="bigValue" class="value-box">0.00</div>
+    <div class="label-box">m/s</div>
+  </div>
 
-        <div class="grid3" style="margin-top:10px;">
-          <div class="metric">
-            <div class="k">Accélération filtrée</div>
-            <div><span class="v" style="font-size:28px" id="aLive">0.00</span><span class="u">m/s²</span></div>
-          </div>
-          <div class="metric">
-            <div class="k">Pic vitesse (pendant rep)</div>
-            <div><span class="v" style="font-size:28px" id="vPeakLive">0.00</span><span class="u">m/s</span></div>
-          </div>
-          <div class="metric">
-            <div class="k">État</div>
-            <div><span class="v" style="font-size:28px" id="repState">—</span></div>
-          </div>
-        </div>
-
-        <p class="muted" style="margin:10px 0 0;">
-          ⚠️ Estimation smartphone : dépend de la fixation et des vibrations. Mesure scalaire (sans direction).
-        </p>
+  <div class="controls">
+    <div class="input-row">
+      <div class="input-group">
+        <label>Exercice</label>
+        <select id="exSelect">
+          <option>Squat</option>
+          <option>Bench</option>
+          <option>Deadlift</option>
+        </select>
       </div>
-
-      <div class="card">
-        <div class="grid2">
-          <div>
-            <label for="exercise">Exercice</label>
-            <select id="exercise">
-              <option value="Squat">Squat</option>
-              <option value="Bench Press">Bench Press</option>
-              <option value="Deadlift">Deadlift</option>
-              <option value="Shoulder Press">Shoulder Press</option>
-              <option value="Row">Row</option>
-              <option value="Autre" selected>Autre</option>
-            </select>
-          </div>
-          <div>
-            <label for="loadInput">Charge (kg)</label>
-            <input id="loadInput" type="number" value="20" step="2.5" min="0" />
-          </div>
-        </div>
-
-        <div class="btnRow" style="margin-top:10px;">
-          <button id="btnValidate" type="button" disabled>Valider la rep</button>
-          <button id="btnDiscard" class="secondary" type="button" disabled>Ignorer</button>
-        </div>
-
-        <div class="btnRow" style="margin-top:10px;">
-          <button id="btnReset" class="secondary" type="button">Nouveau set</button>
-          <button id="btnExport" class="secondary" type="button">Exporter CSV</button>
-        </div>
-
-        <details style="margin-top:10px;">
-          <summary>Réglages avancés</summary>
-          <div style="margin-top:10px;" class="grid2">
-            <div>
-              <label for="axisMode">Mode capteur</label>
-              <select id="axisMode">
-                <option value="mag" selected>Magnitude (robuste)</option>
-                <option value="x">Axe X</option>
-                <option value="y">Axe Y</option>
-                <option value="z">Axe Z</option>
-              </select>
-              <div class="small">Magnitude = plus stable si l’orientation change.</div>
-            </div>
-            <div>
-              <label for="decayTau">Anti-dérive vitesse (s)</label>
-              <input id="decayTau" type="number" value="0.35" step="0.05" min="0.05" />
-              <div class="small">Plus bas = vitesse retombe plus vite.</div>
-            </div>
-          </div>
-
-          <div style="margin-top:10px;" class="grid2">
-            <div>
-              <label for="startThr">Seuil début rep (m/s²)</label>
-              <input id="startThr" type="number" value="0.50" step="0.05" min="0" />
-            </div>
-            <div>
-              <label for="stopThr">Seuil fin rep (m/s²)</label>
-              <input id="stopThr" type="number" value="0.20" step="0.05" min="0" />
-            </div>
-          </div>
-
-          <div style="margin-top:10px;">
-            <label for="stopHold">Temps bas pour finir (ms)</label>
-            <input id="stopHold" type="number" value="250" step="50" min="50" />
-          </div>
-        </details>
-
-        <p class="muted" style="margin:10px 0 0;">
-          iPhone : Safari + HTTPS + <b>Réglages iOS → Safari → Accès Mouvement et orientation</b> (activer).
-        </p>
+      <div class="input-group">
+        <label>Charge (kg)</label>
+        <input type="number" id="loadInput" value="60">
       </div>
     </div>
 
-    <div class="card" style="margin-top:12px;">
-      <div class="btnRow" style="justify-content:space-between;">
-        <div>
-          <b>Dernière rep (en attente de validation)</b>
-          <div class="small">Elle n’est enregistrée que si tu appuies sur “Valider la rep”.</div>
-        </div>
-        <span class="pill">Puissance ≈ <b id="pHint">m·g·v</b></span>
-      </div>
-
-      <div class="grid3" style="margin-top:10px;">
-        <div class="metric">
-          <div class="k">Vitesse moyenne</div>
-          <div><span class="v" style="font-size:28px" id="vMean">—</span><span class="u">m/s</span></div>
-        </div>
-        <div class="metric">
-          <div class="k">Vitesse pic</div>
-          <div><span class="v" style="font-size:28px" id="vPeak">—</span><span class="u">m/s</span></div>
-        </div>
-        <div class="metric">
-          <div class="k">Accélération pic</div>
-          <div><span class="v" style="font-size:28px" id="aPeak">—</span><span class="u">m/s²</span></div>
-        </div>
-      </div>
-
-      <div class="grid3" style="margin-top:10px;">
-        <div class="metric">
-          <div class="k">Puissance moyenne (≈ m·g·v̄)</div>
-          <div><span class="v" style="font-size:28px" id="pMean">—</span><span class="u">W</span></div>
-        </div>
-        <div class="metric">
-          <div class="k">Puissance pic (≈ m·g·vₚ)</div>
-          <div><span class="v" style="font-size:28px" id="pPeak">—</span><span class="u">W</span></div>
-        </div>
-        <div class="metric">
-          <div class="k">Durée rep</div>
-          <div><span class="v" style="font-size:28px" id="dur">—</span><span class="u">s</span></div>
-        </div>
-      </div>
-
-      <details style="margin-top:12px;">
-        <summary>Historique (reps validées)</summary>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Exercice</th>
-              <th>Charge</th>
-              <th class="right">v̄</th>
-              <th class="right">vₚ</th>
-              <th class="right">P̄</th>
-              <th class="right">Pₚ</th>
-              <th class="right">Durée</th>
-              <th>Horodatage</th>
-            </tr>
-          </thead>
-          <tbody id="resultsTable"></tbody>
-        </table>
-        <div class="small" style="margin-top:8px;">
-          Les données sont sauvegardées localement (si tu recharges la page, ça reste).
-        </div>
-      </details>
+    <div id="startZone">
+      <button class="btn-start" id="btnStart">Écouter (Start)</button>
     </div>
 
-    <p class="muted" style="margin-top:12px;">
-      Astuce : Safari → Partager → <b>Ajouter à l’écran d’accueil</b>.
-    </p>
+    <div id="validZone" class="hidden">
+      <button class="btn-valid" id="btnSave">Valider</button>
+      <button class="btn-discard" id="btnRetry">Ignorer / Refaire</button>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <canvas id="myChart"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <table id="histTable">
+      <thead><tr><th>Set</th><th>Kg</th><th class="num">m/s</th><th class="num">W</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <div style="margin-top:10px; text-align:right;">
+      <button onclick="resetData()" style="background:transparent; color:var(--danger); font-size:12px; width:auto; padding:5px;">Tout effacer</button>
+    </div>
+  </div>
+
+  <div class="instructions">
+    1. Fixe le téléphone. 2. Appuie sur "Écouter".<br>
+    3. Fais ta rep. L'appli détecte la fin et t'affiche le score.<br>
+    4. Valide pour ajouter au graphique.
+    <br><br>
+    <i>Note : Sur iPhone, utilise Safari et autorise les capteurs.</i>
   </div>
 
 <script>
-(() => {
-  const $ = (id) => document.getElementById(id);
+// --- CONFIG ---
+const THRESHOLD_START = 0.6; // Sensibilité déclenchement
+const THRESHOLD_STOP = 0.3;  // Sensibilité arrêt
+const TIME_HOLD_STOP = 300;  // Durée (ms) stable pour considérer la rep finie
 
-  // UI
-  const btnStart = $("btnStart"), btnStop = $("btnStop");
-  const btnValidate = $("btnValidate"), btnDiscard = $("btnDiscard");
-  const btnReset = $("btnReset"), btnExport = $("btnExport");
-  const btnTheme = $("btnTheme");
+// --- STATE ---
+let isListening = false;
+let inRep = false;
+let startTime = 0;
+let stopTimer = null;
+let maxSpeed = 0;
+let currentSpeed = 0;
+let accSmooth = 0;
 
-  const statusDot = $("statusDot"), statusText = $("statusText");
-  const repCountEl = $("repCount"), repStateEl = $("repState");
-  const vLiveEl = $("vLive"), aLiveEl = $("aLive"), vPeakLiveEl = $("vPeakLive");
+let historyData = [];
 
-  const exerciseEl = $("exercise");
-  const loadInput = $("loadInput");
-  const axisMode = $("axisMode");
-  const startThrEl = $("startThr"), stopThrEl = $("stopThr");
-  const stopHoldEl = $("stopHold"), decayTauEl = $("decayTau");
+// --- DOM ---
+const ui = {
+  val: document.getElementById('bigValue'),
+  status: document.getElementById('statusPill'),
+  startZone: document.getElementById('startZone'),
+  validZone: document.getElementById('validZone'),
+  btnStart: document.getElementById('btnStart'),
+  btnSave: document.getElementById('btnSave'),
+  btnRetry: document.getElementById('btnRetry'),
+  table: document.querySelector('#histTable tbody'),
+  load: document.getElementById('loadInput'),
+  canvas: document.getElementById('myChart')
+};
 
-  const vMeanEl = $("vMean"), vPeakEl = $("vPeak"), aPeakEl = $("aPeak");
-  const pMeanEl = $("pMean"), pPeakEl = $("pPeak"), durEl = $("dur");
-  const tableBody = $("resultsTable");
+// --- LOGIQUE MOUVEMENT ---
+function processMotion(event) {
+  if (!isListening) return;
 
-  // Storage keys
-  const KEY_ROWS = "vm_rows_v1";
-  const KEY_THEME = "vm_theme_v1";
-  const KEY_SETTINGS = "vm_settings_v1";
+  // Lecture capteur (avec support gravité Android/iOS)
+  const acc = event.acceleration;
+  const accG = event.accelerationIncludingGravity;
+  let ax = 0, ay = 0, az = 0;
 
-  // State
-  let listening = false;
-  let lastT = null;
-
-  // Filters / signals
-  let gSlow = null;    // <-- important: init dynamically
-  let aEMA  = 0;
-  let v     = 0;
-  let vPeakLive = 0;
-
-  // Rep detection
-  let inRep = false;
-  let belowSince = null;
-  let repCount = 0;
-  let repStartT = null;
-  let repV = [];
-  let repA = [];
-
-  // Pending rep (must be validated)
-  let pending = null; // {exercise, load, vMean, vPeak, aPeak, pMean, pPeak, dur, iso}
-
-  // Stored validated rows
-  const rows = loadRows();
-
-  // Theme
-  initTheme();
-
-  // Restore settings
-  restoreSettings();
-
-  // Render existing table + repCount
-  renderTable();
-  repCount = rows.length;
-  repCountEl.textContent = String(repCount);
-
-  function setStatus(kind, text) {
-    statusDot.className = "dot " + (kind || "");
-    statusText.textContent = text;
+  if (acc && acc.x != null) {
+    ax = acc.x; ay = acc.y; az = acc.z;
+  } else if (accG) {
+    // Filtre passe-haut rudimentaire si pas de linear_acceleration
+    ax = accG.x; ay = accG.y; az = accG.z - 9.81; 
   }
 
-  function clampDt(dt) {
-    if (!isFinite(dt) || dt <= 0) return 0.016;
-    return Math.max(0.004, Math.min(0.06, dt)); // a bit less jittery
-  }
+  // Magnitude absolue (on se fiche de l'orientation)
+  const rawMag = Math.sqrt(ax*ax + ay*ay + az*az);
+  
+  // Lissage (Low pass filter) pour éviter le bruit
+  accSmooth = accSmooth * 0.8 + rawMag * 0.2;
 
-  function getParams() {
-    const START_THR = parseFloat(startThrEl.value) || 0.5;
-    const STOP_THR  = parseFloat(stopThrEl.value)  || 0.2;
-    const STOP_HOLD_MS = parseInt(stopHoldEl.value, 10) || 250;
-    const DECAY_TAU = parseFloat(decayTauEl.value) || 0.35;
-    return { START_THR, STOP_THR, STOP_HOLD_MS, DECAY_TAU };
-  }
+  const now = performance.now();
+  // Intégration Vitesse (simplifiée)
+  // Drift decay : la vitesse redescend doucement vers 0 si pas de mouvement
+  currentSpeed = (currentSpeed * 0.95) + (accSmooth * 0.016); 
+  if (currentSpeed < 0.05) currentSpeed = 0;
 
-  function readAccel(evt) {
-    const a = evt.acceleration;
-    const ag = evt.accelerationIncludingGravity;
-
-    let ax=null, ay=null, az=null;
-
-    if (a && (a.x!==null || a.y!==null || a.z!==null)) {
-      ax=a.x; ay=a.y; az=a.z;
-    } else if (ag && (ag.x!==null || ag.y!==null || ag.z!==null)) {
-      ax=ag.x; ay=ag.y; az=ag.z;
-    } else return null;
-
-    if (ax===null || ay===null || az===null) return null;
-
-    const mode = axisMode.value;
-    let raw;
-    if (mode === "mag") raw = Math.sqrt(ax*ax + ay*ay + az*az);
-    else if (mode === "x") raw = ax;
-    else if (mode === "y") raw = ay;
-    else raw = az;
-
-    return { raw };
-  }
-
-  function powerFrom(loadKg, velMs) {
-    // Approx vertical: P ≈ m*g*v
-    const g = 9.81;
-    const m = Math.max(0, loadKg);
-    return m * g * Math.max(0, velMs);
-  }
-
-  function clearPendingUI() {
-    pending = null;
-    vMeanEl.textContent = "—";
-    vPeakEl.textContent = "—";
-    aPeakEl.textContent = "—";
-    pMeanEl.textContent = "—";
-    pPeakEl.textContent = "—";
-    durEl.textContent = "—";
-    btnValidate.disabled = true;
-    btnDiscard.disabled = true;
-  }
-
-  function showPending(p) {
-    pending = p;
-    vMeanEl.textContent = p.vMean.toFixed(2);
-    vPeakEl.textContent = p.vPeak.toFixed(2);
-    aPeakEl.textContent = p.aPeak.toFixed(2);
-    pMeanEl.textContent = Math.round(p.pMean).toString();
-    pPeakEl.textContent = Math.round(p.pPeak).toString();
-    durEl.textContent = p.dur.toFixed(2);
-    btnValidate.disabled = false;
-    btnDiscard.disabled = false;
-  }
-
-  function startRep(now) {
-    inRep = true;
-    repStateEl.textContent = "EN REP";
-    repStartT = now;
-    belowSince = null;
-    repV = [];
-    repA = [];
-    v = 0;
-    vPeakLive = 0;
-    vPeakLiveEl.textContent = "0.00";
-    setStatus("warn", "Répétition détectée");
-    // Lock inputs during rep
-    loadInput.disabled = true;
-    exerciseEl.disabled = true;
-  }
-
-  function endRep(now) {
-    inRep = false;
-    repStateEl.textContent = "—";
-    setStatus("ok", "En écoute");
-    belowSince = null;
-
-    // Unlock inputs
-    loadInput.disabled = false;
-    exerciseEl.disabled = false;
-
-    if (repV.length < 6) {
-      // too short/noisy
-      repV=[]; repA=[];
-      v=0; aEMA=0;
-      return;
+  // --- MACHINE A ETATS ---
+  
+  if (!inRep) {
+    // Phase d'attente
+    if (accSmooth > THRESHOLD_START) {
+      inRep = true;
+      maxSpeed = 0;
+      ui.status.textContent = "🔥 En cours...";
+      ui.status.className = "status-pill active";
+      ui.val.style.color = "#0a84ff"; // Bleu
     }
+    // Affiche 0 ou bruit de fond léger
+    ui.val.textContent = currentSpeed.toFixed(2);
+  } 
+  else {
+    // Phase de répétition active
+    if (currentSpeed > maxSpeed) maxSpeed = currentSpeed;
+    ui.val.textContent = currentSpeed.toFixed(2);
 
-    const vMean = repV.reduce((s,x)=>s+x,0)/repV.length;
-    const vPeak = Math.max(...repV);
-    const aPeak = Math.max(...repA);
-    const dur = (now - repStartT) / 1000;
-
-    const load = parseFloat(loadInput.value) || 0;
-    const ex = exerciseEl.value || "Autre";
-    const pMean = powerFrom(load, vMean);
-    const pPeak = powerFrom(load, vPeak);
-    const iso = new Date().toISOString();
-
-    showPending({ exercise: ex, load, vMean, vPeak, aPeak, pMean, pPeak, dur, iso });
-
-    // reset integrators for next detection
-    repV=[]; repA=[];
-    v=0; aEMA=0;
-  }
-
-  function onMotion(evt) {
-    const now = performance.now();
-    if (lastT === null) lastT = now;
-    const dt = clampDt((now - lastT) / 1000);
-    lastT = now;
-
-    const p = getParams();
-    const acc = readAccel(evt);
-    if (!acc) return;
-
-    // init baseline on first sample (fixes start bias)
-    if (gSlow === null) gSlow = acc.raw;
-
-    // Filters
-    const ALPHA_SLOW = 0.02;
-    const ALPHA_FAST = 0.35;
-
-    gSlow = (1 - ALPHA_SLOW) * gSlow + ALPHA_SLOW * acc.raw;
-    const aHP = acc.raw - gSlow;
-
-    // Scalar motion (no direction)
-    const aAbs = Math.abs(aHP);
-    aEMA = (1 - ALPHA_FAST) * aEMA + ALPHA_FAST * aAbs;
-
-    // Speed integration + anti-drift decay
-    const tau = Math.max(0.05, p.DECAY_TAU);
-    const decay = Math.exp(-dt / tau);
-    v = v * decay + aEMA * dt;
-    if (v < 0) v = 0;
-
-    // Live UI
-    aLiveEl.textContent = aEMA.toFixed(2);
-    vLiveEl.textContent = v.toFixed(2);
-
-    if (inRep) {
-      repV.push(v);
-      repA.push(aEMA);
-
-      if (v > vPeakLive) {
-        vPeakLive = v;
-        vPeakLiveEl.textContent = vPeakLive.toFixed(2);
-      }
-
-      // stop logic
-      if (aEMA < p.STOP_THR) {
-        if (belowSince === null) belowSince = now;
-        if ((now - belowSince) > p.STOP_HOLD_MS) endRep(now);
-      } else {
-        belowSince = null;
+    // Détection fin
+    if (accSmooth < THRESHOLD_STOP) {
+      if (!stopTimer) stopTimer = now;
+      if (now - stopTimer > TIME_HOLD_STOP) {
+        // C'EST FINI
+        finishRep();
       }
     } else {
-      // start logic
-      if (aEMA > p.START_THR) startRep(now);
+      stopTimer = null;
     }
   }
+}
 
-  async function requestPermissionIfNeeded() {
-    // Must be called from a user gesture (button click)
-    if (typeof DeviceMotionEvent !== "undefined" &&
-        typeof DeviceMotionEvent.requestPermission === "function") {
-      const resp = await DeviceMotionEvent.requestPermission();
-      if (resp !== "granted") throw new Error("Permission refusée");
-    }
+function finishRep() {
+  isListening = false;
+  inRep = false;
+  stopTimer = null;
+  currentSpeed = 0;
+  
+  // Afficher le résultat figé
+  ui.val.textContent = maxSpeed.toFixed(2);
+  ui.val.style.color = "#30d158"; // Vert
+  ui.status.textContent = "Terminé";
+  ui.status.className = "status-pill done";
+
+  // Changer les boutons
+  ui.startZone.classList.add('hidden');
+  ui.validZone.classList.remove('hidden');
+}
+
+// --- BOUTONS ---
+
+ui.btnStart.addEventListener('click', async () => {
+  // Permission iOS
+  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+    try { await DeviceMotionEvent.requestPermission(); } catch (e) {}
   }
 
-  function startListening() {
-    if (listening) return;
+  // Reset UI
+  ui.startZone.classList.remove('hidden');
+  ui.validZone.classList.add('hidden');
+  ui.val.style.color = "white";
+  ui.val.textContent = "0.00";
+  ui.status.textContent = "Écoute...";
+  ui.status.className = "status-pill active";
+  
+  isListening = true;
+  inRep = false;
+  accSmooth = 0;
+  currentSpeed = 0;
+  
+  window.addEventListener('devicemotion', processMotion, {passive: true});
+});
 
-    window.addEventListener("devicemotion", onMotion, { passive:true });
-    listening = true;
-
-    btnStart.disabled = true;
-    btnStop.disabled = false;
-
-    setStatus("ok", "En écoute");
-    repStateEl.textContent = "—";
-
-    // reset signals
-    lastT = null;
-    gSlow = null; // init at first sample
-    aEMA = 0;
-    v = 0;
-    vPeakLive = 0;
-
-    vLiveEl.textContent = "0.00";
-    aLiveEl.textContent = "0.00";
-    vPeakLiveEl.textContent = "0.00";
-  }
-
-  function stopListening() {
-    if (!listening) return;
-
-    window.removeEventListener("devicemotion", onMotion);
-    listening = false;
-
-    btnStart.disabled = false;
-    btnStop.disabled = true;
-
-    setStatus("", "En attente");
-    repStateEl.textContent = "—";
-
-    inRep = false;
-    belowSince = null;
-    repV=[]; repA=[];
-    v=0; aEMA=0; lastT=null; gSlow=null;
-
-    // unlock inputs
-    loadInput.disabled = false;
-    exerciseEl.disabled = false;
-
-    vLiveEl.textContent = "0.00";
-    aLiveEl.textContent = "0.00";
-    vPeakLiveEl.textContent = "0.00";
-  }
-
-  function renderTable() {
-    tableBody.innerHTML = "";
-    rows.forEach((r, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${idx+1}</td>
-        <td>${escapeHtml(r.exercise)}</td>
-        <td>${Number(r.load).toFixed(1)} kg</td>
-        <td class="right">${Number(r.vMean).toFixed(2)}</td>
-        <td class="right">${Number(r.vPeak).toFixed(2)}</td>
-        <td class="right">${Math.round(Number(r.pMean))}</td>
-        <td class="right">${Math.round(Number(r.pPeak))}</td>
-        <td class="right">${Number(r.dur).toFixed(2)}</td>
-        <td>${r.iso.replace("T"," ").replace("Z","")}</td>
-      `;
-      tableBody.appendChild(tr);
-    });
-    saveRows();
-  }
-
-  function exportCSV() {
-    if (!rows.length) return;
-    const header = ["rep","exercise","load_kg","v_mean_ms","v_peak_ms","a_peak_ms2","p_mean_w","p_peak_w","duration_s","timestamp_iso"];
-    const lines = [header.join(",")];
-    rows.forEach((r, i) => {
-      lines.push([
-        i+1,
-        csvSafe(r.exercise),
-        Number(r.load).toFixed(2),
-        Number(r.vMean).toFixed(4),
-        Number(r.vPeak).toFixed(4),
-        Number(r.aPeak).toFixed(4),
-        Number(r.pMean).toFixed(2),
-        Number(r.pPeak).toFixed(2),
-        Number(r.dur).toFixed(4),
-        r.iso
-      ].join(","));
-    });
-    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vitesse-muscu_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-  }
-
-  function resetAll() {
-    rows.length = 0;
-    renderTable();
-    repCount = 0;
-    repCountEl.textContent = "0";
-    clearPendingUI();
-  }
-
-  // --- Persistence ---
-  function loadRows(){
-    try{
-      const s = localStorage.getItem(KEY_ROWS);
-      if(!s) return [];
-      const arr = JSON.parse(s);
-      return Array.isArray(arr) ? arr : [];
-    }catch(_){ return []; }
-  }
-  function saveRows(){
-    try{ localStorage.setItem(KEY_ROWS, JSON.stringify(rows)); }catch(_){}
-  }
-
-  function saveSettings(){
-    const settings = {
-      exercise: exerciseEl.value,
-      load: loadInput.value,
-      axis: axisMode.value,
-      startThr: startThrEl.value,
-      stopThr: stopThrEl.value,
-      stopHold: stopHoldEl.value,
-      decayTau: decayTauEl.value
-    };
-    try{ localStorage.setItem(KEY_SETTINGS, JSON.stringify(settings)); }catch(_){}
-  }
-  function restoreSettings(){
-    try{
-      const s = localStorage.getItem(KEY_SETTINGS);
-      if(!s) return;
-      const o = JSON.parse(s);
-      if(o.exercise) exerciseEl.value = o.exercise;
-      if(o.load) loadInput.value = o.load;
-      if(o.axis) axisMode.value = o.axis;
-      if(o.startThr) startThrEl.value = o.startThr;
-      if(o.stopThr) stopThrEl.value = o.stopThr;
-      if(o.stopHold) stopHoldEl.value = o.stopHold;
-      if(o.decayTau) decayTauEl.value = o.decayTau;
-    }catch(_){}
-  }
-
-  function initTheme(){
-    const saved = localStorage.getItem(KEY_THEME);
-    if(saved==="dark" || saved==="light"){
-      document.documentElement.setAttribute("data-theme", saved);
-    } else {
-      // default: light
-      document.documentElement.setAttribute("data-theme", "light");
-    }
-  }
-  function toggleTheme(){
-    const cur = document.documentElement.getAttribute("data-theme") || "light";
-    const next = (cur==="light") ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", next);
-    try{ localStorage.setItem(KEY_THEME, next); }catch(_){}
-  }
-
-  // --- helpers ---
-  function escapeHtml(str){
-    return String(str).replace(/[&<>"']/g, (c)=>({
-      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-    }[c]));
-  }
-  function csvSafe(str){
-    const s = String(str ?? "");
-    // wrap in quotes if comma or quote
-    if(/[",\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
-    return s;
-  }
-
-  // --- Events ---
-  btnStart.addEventListener("click", async () => {
-    try {
-      setStatus("warn","Autorisation…");
-      await requestPermissionIfNeeded();
-      startListening();
-
-      // tiny watchdog: if no motion event triggers soon, warn user
-      const t0 = performance.now();
-      let gotAny = false;
-      const probe = () => { gotAny = true; };
-      window.addEventListener("devicemotion", probe, { passive:true, once:true });
-      setTimeout(() => {
-        if(!gotAny && listening){
-          setStatus("bad","Capteur inactif");
-          alert("Capteur inactif. Vérifie : iPhone → Réglages → Safari → Accès Mouvement et orientation, et utilise Safari (pas Chrome) + HTTPS.");
-        }
-      }, 1200);
-
-    } catch (e) {
-      console.error(e);
-      setStatus("bad","Capteurs refusés");
-      alert("Impossible d'accéder aux capteurs. Sur iPhone : Safari + HTTPS + autoriser Mouvement & Orientation.");
-    }
+ui.btnSave.addEventListener('click', () => {
+  // Sauvegarde
+  const load = parseFloat(ui.load.value) || 0;
+  const power = Math.round(load * 9.81 * maxSpeed); // Approx P = F*v
+  
+  historyData.push({
+    id: historyData.length + 1,
+    load: load,
+    v: maxSpeed,
+    p: power
   });
+  
+  updateTable();
+  updateChart();
+  
+  // Retour à l'état initial
+  ui.val.textContent = "0.00";
+  ui.val.style.color = "white";
+  ui.status.textContent = "En attente";
+  ui.status.className = "status-pill";
+  ui.validZone.classList.add('hidden');
+  ui.startZone.classList.remove('hidden');
+  isListening = false;
+});
 
-  btnStop.addEventListener("click", () => stopListening());
+ui.btnRetry.addEventListener('click', () => {
+  // On jette et on recommence
+  ui.val.textContent = "0.00";
+  ui.val.style.color = "white";
+  ui.status.textContent = "En attente";
+  ui.status.className = "status-pill";
+  ui.validZone.classList.add('hidden');
+  ui.startZone.classList.remove('hidden');
+  isListening = false;
+});
 
-  btnValidate.addEventListener("click", () => {
-    if(!pending) return;
-    rows.push(pending);
-    repCount = rows.length;
-    repCountEl.textContent = String(repCount);
-    renderTable();
-    clearPendingUI();
+// --- TABLEAU & GRAPHIQUE ---
+
+function updateTable() {
+  ui.table.innerHTML = "";
+  // Afficher les derniers en haut
+  [...historyData].reverse().forEach(row => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${row.id}</td>
+      <td>${row.load}</td>
+      <td class="num"><strong>${row.v.toFixed(2)}</strong></td>
+      <td class="num">${row.p}</td>
+    `;
+    ui.table.appendChild(tr);
   });
+}
 
-  btnDiscard.addEventListener("click", () => {
-    clearPendingUI();
+function updateChart() {
+  const ctx = ui.canvas.getContext('2d');
+  const w = ui.canvas.width = ui.canvas.offsetWidth;
+  const h = ui.canvas.height = 200;
+  
+  // Reset
+  ctx.clearRect(0,0,w,h);
+  if(historyData.length < 1) return;
+
+  const pad = 30;
+  const gw = w - pad * 2;
+  const gh = h - pad * 2;
+
+  // Calcul échelles
+  const maxV = Math.max(...historyData.map(d=>d.v)) * 1.2 || 1;
+  const maxRep = historyData.length;
+
+  // Lignes de fond
+  ctx.strokeStyle = "#38383a";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(pad, pad); ctx.lineTo(pad, h-pad); ctx.lineTo(w-pad, h-pad);
+  ctx.stroke();
+
+  // Tracer la ligne
+  ctx.strokeStyle = "#0a84ff";
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  
+  historyData.forEach((d, i) => {
+    // X : réparti uniformément
+    const x = pad + (i / (maxRep > 1 ? maxRep - 1 : 1)) * gw;
+    // Y : Vitesse
+    const y = (h - pad) - (d.v / maxV) * gh;
+    
+    if (i===0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+    
+    // Points
+    // On dessine après pour ne pas casser le path, ou on fait une 2eme passe
   });
+  ctx.stroke();
 
-  btnReset.addEventListener("click", () => {
-    if(confirm("Vider l'historique du set ?")) resetAll();
+  // Dessiner les points
+  ctx.fillStyle = "#0a84ff";
+  historyData.forEach((d, i) => {
+    const x = pad + (i / (maxRep > 1 ? maxRep - 1 : 1)) * gw;
+    const y = (h - pad) - (d.v / maxV) * gh;
+    ctx.beginPath();
+    ctx.arc(x, y, 4, 0, Math.PI*2);
+    ctx.fill();
   });
+}
 
-  btnExport.addEventListener("click", () => exportCSV());
-
-  btnTheme.addEventListener("click", () => toggleTheme());
-
-  // save settings when changed
-  [exerciseEl, loadInput, axisMode, startThrEl, stopThrEl, stopHoldEl, decayTauEl]
-    .forEach(el => el.addEventListener("change", saveSettings));
-
-  // Default UI
-  clearPendingUI();
-  setStatus("", "En attente");
-})();
+function resetData() {
+  if(confirm("Tout effacer ?")) {
+    historyData = [];
+    updateTable();
+    updateChart();
+  }
+}
 </script>
 </body>
 </html>

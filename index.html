@@ -3,77 +3,97 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>VBT Pro — Audio & Stats</title>
+  <title>VBT Scientist — Jidovtseff Style</title>
   <style>
     :root{
-      --bg:#f8f9fc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
-      --border:#e2e8f0; --accent:#3b82f6; --power:#f59e0b; --ok:#22c55e; --bad:#ef4444;
+      --bg:#f8fafc; --card:#ffffff; --text:#1e293b; --muted:#64748b;
+      --border:#e2e8f0; 
+      --vel:#2563eb; /* Bleu Vitesse */
+      --pow:#d97706; /* Or Puissance */
+      --ok:#22c55e; --bad:#ef4444;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     [data-theme="dark"]{
       --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
-      --border:#334155; --accent:#60a5fa;
+      --border:#334155; --vel:#60a5fa; --pow:#fbbf24;
     }
-    body{ margin:0; background:var(--bg); color:var(--text); -webkit-user-select:none; user-select:none; padding-bottom:100px; }
-    .wrap{ max-width:700px; margin:0 auto; padding:16px; }
+    body{ margin:0; background:var(--bg); color:var(--text); -webkit-user-select:none; user-select:none; padding-bottom:120px; }
+    .wrap{ max-width:800px; margin:0 auto; padding:16px; }
     
     header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    h1{ margin:0; font-size:18px; font-weight:800; }
+    h1{ margin:0; font-size:18px; font-weight:800; letter-spacing:-0.5px; }
     .toggle{ font-size:20px; cursor:pointer; }
 
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
+    .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; margin-bottom:16px; box-shadow:0 2px 8px rgba(0,0,0,0.04); }
 
-    .big-metric{ text-align:center; padding:15px 0; }
-    .label{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
-    .val{ font-size:64px; font-weight:900; line-height:1; font-variant-numeric: tabular-nums; letter-spacing:-2px; }
+    /* METRICS */
+    .big-metric{ text-align:center; padding:10px 0; }
+    .label{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; font-weight:700; }
+    .val{ font-size:68px; font-weight:900; line-height:1; font-variant-numeric: tabular-nums; letter-spacing:-2px; color:var(--text); }
     .unit{ font-size:18px; color:var(--muted); font-weight:500; }
 
+    /* BUTTONS */
     button{
-      flex:1; border:none; padding:16px; border-radius:16px;
-      font-size:16px; font-weight:700; cursor:pointer; transition: transform 0.1s;
+      border:none; padding:14px; border-radius:12px;
+      font-size:15px; font-weight:700; cursor:pointer; transition: transform 0.1s;
       display:flex; align-items:center; justify-content:center; gap:8px;
     }
-    button:active{ transform:scale(0.97); }
-    .btn-start{ background:var(--accent); color:white; width:100%; }
-    .btn-valid{ background:var(--ok); color:white; }
-    .btn-reject{ background:var(--card); border:2px solid var(--bad); color:var(--bad); }
+    button:active{ transform:scale(0.98); }
+    .btn-start{ background:var(--vel); color:white; width:100%; box-shadow:0 4px 12px rgba(37,99,235,0.2); }
+    .btn-valid{ background:var(--ok); color:white; flex:1; }
+    .btn-reject{ background:var(--card); border:2px solid var(--bad); color:var(--bad); flex:1; }
+    .btn-calc{ background:var(--text); color:var(--bg); width:100%; margin-top:10px; }
+    .btn-small{ background:transparent; border:1px solid var(--border); color:var(--muted); font-size:12px; padding:8px 12px; }
 
+    /* INPUTS */
     select, input{
-      background:var(--card); color:var(--text); border:1px solid var(--border);
-      padding:10px; border-radius:12px; width:100%; font-size:16px; box-sizing:border-box;
+      background:var(--bg); color:var(--text); border:1px solid var(--border);
+      padding:10px; border-radius:10px; width:100%; font-size:16px; box-sizing:border-box; outline:none;
     }
 
+    /* OVERLAYS */
     #validationOverlay {
       position:fixed; bottom:0; left:0; width:100%;
       background:var(--card); border-top:1px solid var(--border);
-      padding:20px; box-sizing:border-box; z-index:100;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+      padding:24px; box-sizing:border-box; z-index:100;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.2);
       transform: translateY(110%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
     #validationOverlay.visible { transform: translateY(0); }
 
     #cntOverlay {
       position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(15,23,42,0.98); z-index:200;
+      background:var(--bg); z-index:200;
       display:none; align-items:center; justify-content:center; flex-direction:column;
     }
-    #cntVal { font-size:140px; font-weight:900; color:white; }
-    #cntTxt { color:#94a3b8; font-size:18px; text-transform:uppercase; letter-spacing:2px; }
+    #cntVal { font-size:140px; font-weight:900; color:var(--text); }
+    #cntTxt { color:var(--muted); font-size:18px; text-transform:uppercase; letter-spacing:2px; }
 
-    table { width:100%; border-collapse:collapse; font-size:12px; margin-top:10px; }
-    th { text-align:left; color:var(--muted); padding:6px; border-bottom:1px solid var(--border); }
-    td { padding:8px 6px; border-bottom:1px solid var(--border); }
+    /* TABLE */
+    table { width:100%; border-collapse:collapse; font-size:13px; margin-top:10px; }
+    th { text-align:left; color:var(--muted); padding:8px 4px; border-bottom:1px solid var(--border); font-size:11px; text-transform:uppercase; }
+    td { padding:10px 4px; border-bottom:1px solid var(--border); }
     .num { text-align:right; font-weight:600; font-variant-numeric: tabular-nums; }
     
-    .chart-box { position:relative; width:100%; height:280px; margin-top:10px; }
+    /* CHART */
+    .chart-box { position:relative; width:100%; height:320px; margin-top:15px; border:1px solid var(--border); border-radius:12px; background:var(--bg); }
     canvas { width:100%; height:100%; display:block; }
 
     .status-pill { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; background:var(--border); color:var(--muted); }
     .status-pill.active { background:#dbeafe; color:#2563eb; }
     .status-pill.locked { background:#dcfce7; color:#16a34a; }
 
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .controls-row { display:flex; gap:10px; margin-top:15px; }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .controls-row { display:flex; gap:12px; margin-top:20px; }
+
+    /* RESULTS BOX */
+    #resultsBox {
+      display:none;
+      background: linear-gradient(135deg, var(--card) 0%, var(--bg) 100%);
+      border:1px solid var(--border); border-radius:12px; padding:15px; margin-top:15px;
+    }
+    .res-row { display:flex; justify-content:space-between; margin-bottom:8px; align-items:center; }
+    .res-val { font-weight:800; font-size:18px; }
   </style>
 </head>
 <body>
@@ -84,29 +104,36 @@
   </div>
 
   <div id="validationOverlay">
-    <div style="text-align:center; margin-bottom:20px;">
-      <div class="label">Résultat</div>
-      <div style="font-size:40px; font-weight:800;" id="modalVal">0.00</div>
-      <div style="font-size:14px; color:var(--muted);">
-        Puis: <b id="modalPower">0 W</b> • Acc: <b id="modalAcc">0g</b>
+    <div style="text-align:center;">
+      <div class="label">Résultat Fin de Mouvement</div>
+      <div style="font-size:48px; font-weight:900; margin:10px 0; color:var(--vel);" id="modalVal">0.00</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; text-align:center;">
+        <div style="background:var(--bg); padding:10px; border-radius:8px;">
+          <div class="label">Puissance</div>
+          <div style="font-weight:700; color:var(--pow);" id="modalPower">0 W</div>
+        </div>
+        <div style="background:var(--bg); padding:10px; border-radius:8px;">
+          <div class="label">Accel Pic</div>
+          <div style="font-weight:700;" id="modalAcc">0g</div>
+        </div>
       </div>
     </div>
     <div class="controls-row">
-      <button class="btn-reject" id="btnReject">Ignorer</button>
+      <button class="btn-reject" id="btnReject">Rejeter</button>
       <button class="btn-valid" id="btnValid">Valider</button>
     </div>
   </div>
 
   <div class="wrap" id="app">
     <header>
-      <h1>VBT Pro Audio</h1>
+      <h1>VBT Scientist</h1>
       <div class="toggle" id="themeBtn">🌗</div>
     </header>
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div id="statusPill" class="status-pill">En attente</div>
-        <select id="timerDelay" style="width:auto; padding:4px 8px; font-size:12px;">
+        <div id="statusPill" class="status-pill">Prêt</div>
+        <select id="timerDelay" style="width:auto; padding:4px 20px 4px 8px; font-size:12px; height:26px;">
           <option value="0">Direct</option>
           <option value="3" selected>3s</option>
           <option value="5">5s</option>
@@ -115,59 +142,74 @@
       </div>
 
       <div class="big-metric">
-        <div class="label">Vitesse Pic</div>
-        <div><span class="val" id="dispV">0.00</span> <span class="unit">m/s</span></div>
+        <div class="label">Vitesse Pic (m/s)</div>
+        <div class="val" id="dispV">0.00</div>
       </div>
 
       <button class="btn-start" id="btnStart">
-        <span>▶ Démarrer</span>
+        <span>DÉMARRER SÉRIE</span>
       </button>
     </div>
 
     <div class="card">
       <div class="grid-2" style="margin-bottom:15px;">
         <div>
-          <label class="label">Exo</label>
+          <label class="label">Exercice</label>
           <select id="exoSelect">
-            <option value="Bench">Bench</option>
+            <option value="Bench">Bench Press</option>
             <option value="Squat">Squat</option>
             <option value="Deadlift">Deadlift</option>
+            <option value="Row">Rowing</option>
           </select>
         </div>
         <div>
           <label class="label">Charge (kg)</label>
-          <input type="number" id="loadInput" value="60" step="2.5">
+          <input type="number" id="loadInput" value="40" step="2.5">
         </div>
       </div>
 
-      <div class="label">Analyse (Double courbe)</div>
+      <button id="btnCalc" class="btn-calc" style="display:none;">
+        ⚡ Calculer Profil (1RM & P.Opt)
+      </button>
+
+      <div id="resultsBox">
+        <div class="res-row">
+          <span class="label" style="color:var(--text)">1RM Théorique (V=0)</span>
+          <span class="res-val" style="color:var(--vel)" id="res1RM">—</span>
+        </div>
+        <div class="res-row">
+          <span class="label" style="color:var(--text)">Puissance Max (P<sub>max</sub>)</span>
+          <span class="res-val" style="color:var(--pow)" id="resPmax">—</span>
+        </div>
+        <div class="res-row">
+          <span class="label" style="color:var(--text)">Charge Optimale (P<sub>opt</sub>)</span>
+          <span class="res-val" id="resLoadOpt">—</span>
+        </div>
+      </div>
+
       <div class="chart-box">
         <canvas id="chart"></canvas>
       </div>
-      <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:5px;">
-        <span style="color:var(--accent)">●</span> 1RM (Linéaire) &nbsp;&nbsp; 
-        <span style="color:var(--power)">●</span> Puissance (Polynomiale)
-      </div>
       
       <div style="margin-top:20px;">
-        <div class="label">Données Séance</div>
+        <div class="label">Données Brutes</div>
         <div style="overflow-x:auto;">
           <table id="table">
             <thead>
               <tr>
                 <th>Kg</th>
                 <th class="num">V<sub>moy</sub></th>
-                <th class="num">V<sub>pic</sub></th>
+                <th class="num" style="color:var(--vel)">V<sub>pic</sub></th>
                 <th class="num">A<sub>pic</sub></th>
-                <th class="num">Watt</th>
+                <th class="num" style="color:var(--pow)">Watt</th>
               </tr>
             </thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
-        <div style="text-align:center; margin-top:15px;">
-           <button style="background:transparent; color:var(--text); font-size:12px; width:auto; display:inline-block; border:1px solid var(--border);" id="btnExport">Export CSV</button>
-           <button style="background:transparent; color:var(--bad); font-size:12px; width:auto; display:inline-block;" id="btnReset">Reset</button>
+        <div style="text-align:center; margin-top:15px; display:flex; gap:10px; justify-content:center;">
+           <button class="btn-small" id="btnExport">CSV Export</button>
+           <button class="btn-small" style="color:var(--bad); border-color:var(--bad);" id="btnReset">Reset Tout</button>
         </div>
       </div>
     </div>
@@ -178,73 +220,38 @@
 const THRESHOLDS = { start: 0.6, stop: 0.25 };
 const HOLD_TIME = 250;
 
-// --- AUDIO SYSTEM ---
+// --- AUDIO ---
 const synth = window.speechSynthesis;
 let audioCtx = null;
-
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function speak(text) {
-  if (synth.speaking) synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR';
-  u.rate = 1.2;
-  synth.speak(u);
-}
-
+function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); if(audioCtx.state==='suspended') audioCtx.resume(); }
+function speak(t) { if(synth.speaking) synth.cancel(); const u=new SpeechSynthesisUtterance(t); u.lang='fr-FR'; u.rate=1.2; synth.speak(u); }
 function beep() {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-  osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
-  gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.3);
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(); const g=audioCtx.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(800, audioCtx.currentTime);
+  g.gain.setValueAtTime(0.3, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime+0.2);
+  o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.2);
 }
 
 // --- STATE ---
 let state = {
-  listening: false,
-  locked: false,
-  v: 0,
-  vPeak: 0,
-  aEMA: 0,
-  aPeak: 0,
-  vSum: 0, // Pour la moyenne
-  vCount: 0,
-  history: []
+  listening: false, locked: false,
+  v: 0, vPeak: 0, aEMA: 0, aPeak: 0, vSum: 0, vCount: 0,
+  history: [], fit: null
 };
 
 // --- DOM ---
 const $ = (id) => document.getElementById(id);
 const ui = {
-  dispV: $('dispV'),
-  btnStart: $('btnStart'),
-  btnValid: $('btnValid'),
-  btnReject: $('btnReject'),
-  modal: $('validationOverlay'),
-  status: $('statusPill'),
-  cntOverlay: $('cntOverlay'),
-  cntVal: $('cntVal'),
-  tbody: $('tbody'),
-  chart: $('chart'),
-  load: $('loadInput'),
-  exo: $('exoSelect'),
-  timerDelay: $('timerDelay'),
-  modalVal: $('modalVal'),
-  modalPower: $('modalPower'),
-  modalAcc: $('modalAcc')
+  dispV: $('dispV'), btnStart: $('btnStart'), btnValid: $('btnValid'), btnReject: $('btnReject'),
+  modal: $('validationOverlay'), status: $('statusPill'), cntOverlay: $('cntOverlay'), cntVal: $('cntVal'),
+  tbody: $('tbody'), chart: $('chart'), load: $('loadInput'), exo: $('exoSelect'), timerDelay: $('timerDelay'),
+  modalVal: $('modalVal'), modalPower: $('modalPower'), modalAcc: $('modalAcc'),
+  btnCalc: $('btnCalc'), resBox: $('resultsBox'),
+  res1RM: $('res1RM'), resPmax: $('resPmax'), resLoadOpt: $('resLoadOpt')
 };
 
-// --- SENSOR LOGIC ---
+// --- SENSOR ---
 let lastT = null;
 let gSlow = 9.81;
 
@@ -266,137 +273,220 @@ function onMotion(e) {
   const aAbs = Math.abs(raw - gSlow);
   state.aEMA = state.aEMA * 0.7 + aAbs * 0.3;
 
-  // Integrate Velocity
+  // Integrate
   state.v += (state.aEMA * dt);
-  state.v *= 0.96; // Decay
+  state.v *= 0.96; 
   if (state.v < 0) state.v = 0;
 
-  // Stats Collection during movement
-  if (state.v > 0.05) { // Only count if moving
-    state.vSum += state.v;
-    state.vCount++;
-    if (state.aEMA > state.aPeak) state.aPeak = state.aEMA;
-  }
-
-  // Peak Logic
+  // Live Peak
   if (state.v > state.vPeak) {
     state.vPeak = state.v;
     ui.dispV.textContent = state.vPeak.toFixed(2);
   }
 
+  // Collection for Mean
+  if (state.v > 0.05) {
+    state.vSum += state.v; state.vCount++;
+    if (state.aEMA > state.aPeak) state.aPeak = state.aEMA;
+  }
+
   // Stop Logic
   if (state.vPeak > 0.15 && state.aEMA < THRESHOLDS.stop) {
     if (!state.stopTimer) state.stopTimer = now;
-    if (now - state.stopTimer > HOLD_TIME) {
-      lockRep();
-    }
+    if (now - state.stopTimer > HOLD_TIME) lockRep();
   } else {
     state.stopTimer = null;
   }
 }
 
-function startSequence() {
-  initAudio(); // Init audio context on click
-  const delay = parseInt(ui.timerDelay.value);
+function lockRep() {
+  state.locked = true; state.listening = false;
+  const load = parseFloat(ui.load.value);
+  // Calculate Mean Velocity (Physically more accurate for Power)
+  const vMean = state.vCount > 5 ? (state.vSum / state.vCount) : state.vPeak * 0.7; 
+  const power = Math.round((load * 9.81) * vMean);
+  
+  state.temp = { load, vPeak: state.vPeak, vMean, aPeak: state.aPeak, p: power };
 
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission().then(resp => {
-      if (resp === 'granted') runCountdown(delay);
-    }).catch(alert);
-  } else {
-    runCountdown(delay);
-  }
+  ui.modalVal.textContent = state.vPeak.toFixed(2);
+  ui.modalPower.textContent = power + " W";
+  ui.modalAcc.textContent = state.aPeak.toFixed(1) + "g";
+  ui.modal.classList.add('visible');
+  
+  ui.status.textContent = "Validation requise";
+  ui.status.className = "status-pill locked";
+  if(navigator.vibrate) navigator.vibrate(200);
 }
 
-function runCountdown(sec) {
-  if (sec <= 0) {
-    beginMeasurement();
-    return;
-  }
-  
-  ui.cntOverlay.style.display = 'flex';
-  ui.cntVal.textContent = sec;
-  speak(sec.toString()); // Voice 3, 2, 1
-  
-  let remaining = sec;
-  const intv = setInterval(() => {
-    remaining--;
-    if (remaining > 0) {
-      ui.cntVal.textContent = remaining;
-      speak(remaining.toString());
-    } else {
-      clearInterval(intv);
-      ui.cntOverlay.style.display = 'none';
-      beep(); // BEEP at 0
-      beginMeasurement();
-    }
+// --- WORKFLOW ---
+function startSeq() {
+  initAudio();
+  const d = parseInt(ui.timerDelay.value);
+  if(typeof DeviceMotionEvent!=='undefined' && typeof DeviceMotionEvent.requestPermission==='function'){
+    DeviceMotionEvent.requestPermission().then(r=>{if(r==='granted') countdown(d);}).catch(alert);
+  } else countdown(d);
+}
+
+function countdown(sec) {
+  if (sec <= 0) { begin(); return; }
+  ui.cntOverlay.style.display='flex';
+  let t = sec;
+  ui.cntVal.textContent = t; speak(t);
+  const i = setInterval(() => {
+    t--;
+    if (t>0) { ui.cntVal.textContent=t; speak(t); }
+    else { clearInterval(i); ui.cntOverlay.style.display='none'; beep(); begin(); }
   }, 1000);
 }
 
-function beginMeasurement() {
-  state.v = 0; state.vPeak = 0; state.aEMA = 0; 
-  state.aPeak = 0; state.vSum = 0; state.vCount = 0;
-  state.locked = false; state.listening = true;
-  lastT = null;
-  
+function begin() {
+  state.v=0; state.vPeak=0; state.aEMA=0; state.aPeak=0; state.vSum=0; state.vCount=0;
+  state.locked=false; state.listening=true; lastT=null;
   ui.dispV.textContent = "0.00";
-  ui.dispV.style.color = "var(--text)";
-  ui.btnStart.disabled = true;
-  ui.btnStart.textContent = "Mesure...";
-  ui.status.textContent = "En mouvement";
-  ui.status.className = "status-pill active";
-  
-  window.addEventListener('devicemotion', onMotion, {passive: true});
-}
-
-function lockRep() {
-  state.locked = true;
-  state.listening = false;
-  
-  const load = parseFloat(ui.load.value);
-  const vMean = state.vCount > 0 ? (state.vSum / state.vCount) : 0;
-  // Fallback if mean is weirdly low (short impulse)
-  const finalVMean = Math.max(vMean, state.vPeak * 0.6); 
-  const power = Math.round((load * 9.81) * finalVMean); 
-  // Standard VBT often uses Peak Vel for power on non-linear transducers, 
-  // but strict Physics is Mean Force * Mean Vel. We display Mean-based power here.
-
-  state.tempRes = { vPeak: state.vPeak, vMean: finalVMean, aPeak: state.aPeak, p: power, load: load };
-
-  ui.modalVal.textContent = state.vPeak.toFixed(2) + " m/s";
-  ui.modalPower.textContent = power + " W";
-  ui.modalAcc.textContent = state.aPeak.toFixed(1) + " m/s²";
-  ui.modal.classList.add('visible');
-  
-  ui.status.textContent = "Bloqué";
-  ui.status.className = "status-pill locked";
-  
-  if (navigator.vibrate) navigator.vibrate(200);
+  ui.btnStart.disabled=true; ui.btnStart.textContent="Mesure en cours...";
+  ui.status.textContent="Mouvement"; ui.status.className="status-pill active";
+  window.addEventListener('devicemotion', onMotion, {passive:true});
 }
 
 function finalize(saveIt) {
   ui.modal.classList.remove('visible');
   window.removeEventListener('devicemotion', onMotion);
   
-  if (saveIt && state.tempRes) {
-    state.history.push({
-      id: state.history.length + 1,
-      exo: ui.exo.value,
-      ...state.tempRes
-    });
+  if (saveIt && state.temp) {
+    state.history.push({ ...state.temp, exo: ui.exo.value });
     updateTable();
-    updateChart();
+    checkCalcButton(); // Show button if enough data
   }
-
-  ui.btnStart.disabled = false;
-  ui.btnStart.textContent = "▶ Démarrer";
-  ui.status.textContent = "Prêt";
-  ui.status.className = "status-pill";
+  
+  ui.btnStart.disabled=false; ui.btnStart.textContent="Démarrer Série";
+  ui.status.textContent="Prêt"; ui.status.className="status-pill";
 }
 
-ui.btnValid.addEventListener('click', () => finalize(true));
-ui.btnReject.addEventListener('click', () => finalize(false));
-ui.btnStart.addEventListener('click', startSequence);
+ui.btnValid.onclick = () => finalize(true);
+ui.btnReject.onclick = () => finalize(false);
+ui.btnStart.onclick = startSeq;
+
+// --- MATHS & PROFILE CALC ---
+
+// Solve Linear: y = mx + c
+function leastSquares(x, y) {
+  const n = x.length;
+  let sumX=0, sumY=0, sumXY=0, sumXX=0;
+  for(let i=0; i<n; i++) {
+    sumX += x[i]; sumY += y[i];
+    sumXY += x[i]*y[i]; sumXX += x[i]*x[i];
+  }
+  const m = (n*sumXY - sumX*sumY) / (n*sumXX - sumX*sumX);
+  const c = (sumY - m*sumX) / n;
+  return {m, c};
+}
+
+// Solve Quadratic: y = ax^2 + bx + c
+function solvePoly2(x, y) {
+  // Simplified Gaussian elimination for 3x3 matrix (Load^2, Load, 1)
+  let n = x.length;
+  let sX=0, sX2=0, sX3=0, sX4=0, sY=0, sXY=0, sX2Y=0;
+  for(let i=0; i<n; i++){
+    let xi = x[i], yi = y[i], x2=xi*xi;
+    sX+=xi; sX2+=x2; sX3+=x2*xi; sX4+=x2*x2;
+    sY+=yi; sXY+=xi*yi; sX2Y+=x2*yi;
+  }
+  // Matrix A = [[n, sX, sX2], [sX, sX2, sX3], [sX2, sX3, sX4]]
+  // Vector B = [sY, sXY, sX2Y]
+  // We need to find [c, b, a]
+  
+  // Determinant
+  const det = n*(sX2*sX4 - sX3*sX3) - sX*(sX*sX4 - sX3*sX2) + sX2*(sX*sX3 - sX2*sX2);
+  if(Math.abs(det) < 1e-9) return null;
+
+  const a = ((sY*(sX*sX3 - sX2*sX2) - sXY*(n*sX3 - sX2*sX) + sX2Y*(n*sX2 - sX*sX)) / det); // actually c in math terms if order reversed, but let's stick to ax^2+bx+c
+  // Manual Cramer's rule is tedious, let's use a simpler approx for JS without libraries?
+  // Actually, for VBT, Power is 0 at Load 0. So c=0. Model y = ax^2 + bx.
+  // This simplifies to solving 2 unknowns.
+  
+  // Model P = a*L^2 + b*L (Force through origin)
+  const det2 = sX2*sX4 - sX3*sX3;
+  if(Math.abs(det2) < 1e-9) return null;
+  const a_simple = (sXY*sX3 - sX2Y*sX2) / det2; // This is flawed logic for 2x2
+  
+  // Let's stick to standard 3 unknowns, hardcoded result of Cramer for 'a' (coeff of x^2)
+  // Re-eval A:
+  // D = det
+  // Da = n(sX2*sX2Y - sX3*sXY) - sX(sX*sX2Y - sX2*sXY) + sY(sX*sX3 - sX2*sX2) ... wait this is getting complex.
+  
+  // Fallback: Just loop through points and fit best parabola visually? No, requested calculation.
+  // Let's use standard formulas for a, b, c from determinant expansion.
+  // Solving for a (quadratic term):
+  const Da = sX2Y*(n*sX2 - sX*sX) + sXY*(sX*sX2 - n*sX3) + sY*(sX*sX3 - sX2*sX2); // Wait, order matters.
+  // Let's use the polyfit logic found in simple libraries:
+  // We will assume fitting.
+  
+  // Since implementing a full matrix solver in one file is risky, let's use the Vertex approximation.
+  // Optimal Load is roughly midway between max load and 0? No.
+  // Let's return null and just draw curve through points if < 3 points.
+  // If >=3 points, we do a simpler approximation:
+  // Find point with Max Power (P_peak_obs).
+  // Fit parabola through (0,0), (L_opt, P_max), (1RM, 0).
+  
+  // Okay, let's try the full determinant solution properly:
+  const m00=n, m01=sX, m02=sX2;
+  const m10=sX, m11=sX2, m12=sX3;
+  const m20=sX2, m21=sX3, m22=sX4;
+  const r0=sY, r1=sXY, r2=sX2Y;
+  
+  const D = m00*(m11*m22-m12*m21) - m01*(m10*m22-m12*m20) + m02*(m10*m21-m11*m20);
+  if(D===0) return null;
+  
+  const Da_ = r0*(m11*m22-m12*m21) - m01*(r1*m22-m12*r2) + m02*(r1*m21-m11*r2); // This is 'c' (intercept)
+  const Db = m00*(r1*m22-m12*r2) - r0*(m10*m22-m12*m20) + m02*(m10*r2-r1*m20); // This is 'b' (linear)
+  const Dc = m00*(m11*r2-r1*m21) - m01*(m10*r2-r1*m20) + r0*(m10*m21-m11*m20); // This is 'a' (quadratic)
+  
+  return { a: Dc/D, b: Db/D, c: Da_/D };
+}
+
+ui.btnCalc.onclick = () => {
+  const data = state.history.filter(h => h.exo === ui.exo.value);
+  if(data.length < 3) return alert("Il faut au moins 3 points pour un profil précis.");
+  
+  const xs = data.map(d => d.load);
+  const vs = data.map(d => d.vMean); // 1RM based on mean velocity
+  const ps = data.map(d => d.p);
+
+  // 1. Linear (Velocity)
+  const lin = leastSquares(xs, vs);
+  // Theoretical 1RM at V=0 (Physics) or V=MVT?
+  // Boris Jidovtseff often uses MVT intersection. Let's assume V=0 for "Theoretical Max" label.
+  const oneRM = -lin.c / lin.m;
+  
+  // 2. Polynomial (Power)
+  const poly = solvePoly2(xs, ps);
+  let pMax = 0, loadOpt = 0;
+  
+  if (poly && poly.a < 0) { // Must be concave down
+    loadOpt = -poly.b / (2 * poly.a);
+    pMax = poly.a*loadOpt*loadOpt + poly.b*loadOpt + poly.c;
+  } else {
+    // Fallback if fit fails (not a parabola): take max observed
+    const maxIdx = ps.indexOf(Math.max(...ps));
+    pMax = ps[maxIdx];
+    loadOpt = xs[maxIdx];
+  }
+
+  // Display
+  ui.res1RM.textContent = oneRM.toFixed(1) + " kg";
+  ui.resPmax.textContent = pMax.toFixed(0) + " W";
+  ui.resLoadOpt.textContent = loadOpt.toFixed(1) + " kg";
+  ui.resBox.style.display = 'block';
+
+  // Save fit for drawing
+  state.fit = { lin, poly, oneRM, loadOpt, pMax };
+  updateChart();
+};
+
+function checkCalcButton() {
+  const data = state.history.filter(h => h.exo === ui.exo.value);
+  if(data.length >= 3) ui.btnCalc.style.display = 'block';
+}
 
 // --- VISUALIZATION ---
 
@@ -405,43 +495,11 @@ function updateTable() {
     <tr>
       <td>${r.load}</td>
       <td class="num">${r.vMean.toFixed(2)}</td>
-      <td class="num" style="color:var(--accent)">${r.vPeak.toFixed(2)}</td>
+      <td class="num" style="color:var(--vel)">${r.vPeak.toFixed(2)}</td>
       <td class="num">${r.aPeak.toFixed(1)}</td>
-      <td class="num" style="color:var(--power)">${r.p}</td>
+      <td class="num" style="color:var(--pow)">${r.p}</td>
     </tr>
   `).join('');
-}
-
-// Math helpers for Regression
-function linearRegression(x, y) {
-  const n = x.length;
-  if(n<2) return null;
-  const sx = x.reduce((a,b)=>a+b,0), sy = y.reduce((a,b)=>a+b,0);
-  const sxy = x.reduce((a,c,i)=>a+c*y[i],0), sxx = x.reduce((a,b)=>a+b*b,0);
-  const den = (n*sxx - sx*sx);
-  if(den===0) return null;
-  const m = (n*sxy - sx*sy)/den;
-  const b = (sy - m*sx)/n;
-  return {m, b};
-}
-
-function polyRegression(x, y) {
-  // Simple Quadratic Regression (y = ax^2 + bx + c) using Matrix determinant approach
-  // Not a full math library, simplified for 3x3
-  const n = x.length;
-  if (n<3) return null;
-  let sX=0, sX2=0, sX3=0, sX4=0, sY=0, sXY=0, sX2Y=0;
-  for(let i=0; i<n; i++){
-    const xi = x[i], yi = y[i], xi2 = xi*xi;
-    sX+=xi; sX2+=xi2; sX3+=xi2*xi; sX4+=xi2*xi2;
-    sY+=yi; sXY+=xi*yi; sX2Y+=xi2*yi;
-  }
-  // Matrix [ [n, sX, sX2], [sX, sX2, sX3], [sX2, sX3, sX4] ] * [c, b, a] = [sY, sXY, sX2Y]
-  // Gaussian elimination or explicit inverse for 3x3 is too long for inline,
-  // Let's rely on a simplified assumption that we fit a parabola through min/max/avg for visual aid
-  // OR better: use linear regression on Power vs Load? No, Power is parabolic.
-  // Fallback: draw smooth curve through points if regression is too heavy for single-file without math.js
-  return null; // Todo: implement if critical, but raw points + linear 1RM is usually standard
 }
 
 function updateChart() {
@@ -450,66 +508,91 @@ function updateChart() {
   const h = ui.chart.height = ui.chart.clientHeight;
   const data = state.history.filter(h => h.exo === ui.exo.value);
   
+  // Clear & Background
   ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--bg');
+  ctx.fillRect(0,0,w,h);
+  
   if(data.length === 0) return;
 
   // Scales
   const xs = data.map(d=>d.load);
-  const vs = data.map(d=>d.vMean); // 1RM is based on Mean Vel
-  const ps = data.map(d=>d.p);
+  const maxLoad = state.fit ? Math.max(state.fit.oneRM, Math.max(...xs)) : Math.max(...xs);
+  const minLoad = Math.min(...xs) * 0.8;
+  const rangeX = (maxLoad - minLoad) || 10;
   
-  const minX = Math.min(...xs)*0.9, maxX = Math.max(...xs)*1.1;
-  const maxV = Math.max(...vs, 1.0)*1.1;
-  const maxP = Math.max(...ps, 500)*1.1;
+  // Dual Y
+  const maxV = 2.0; // Fixed sensible max for velocity
+  const maxP = Math.max(...data.map(d=>d.p), state.fit?.pMax || 0) * 1.2;
 
-  const toX = (x) => 30 + ((x - minX)/(maxX-minX)) * (w-60);
-  const toY_V = (v) => h - 30 - (v / maxV) * (h-50);
-  const toY_P = (p) => h - 30 - (p / maxP) * (h-50);
+  const toX = (x) => 40 + ((x - minX)/rangeX) * (w-80);
+  const toY_V = (v) => h - 30 - (v / maxV) * (h-60);
+  const toY_P = (p) => h - 30 - (p / maxP) * (h-60);
 
-  // Axes
-  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(30,h-30); ctx.lineTo(w-30,h-30); ctx.stroke();
-
-  // 1. Draw Power Curve (Quadratic approx or just smoothed line)
-  // For VBT, power curve is inverted U. Let's just draw connected points sorted by load for simplicity
-  const sorted = [...data].sort((a,b)=>a.load - b.load);
-  
+  // Grid
+  ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--border');
+  ctx.lineWidth = 1;
   ctx.beginPath();
-  ctx.strokeStyle = '#f59e0b'; // Orange Power
-  ctx.lineWidth = 2;
-  sorted.forEach((d, i) => {
-    const x = toX(d.load), y = toY_P(d.p);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
+  // Horizontal grid (4 lines)
+  for(let i=0; i<=4; i++) {
+    let y = h - 30 - (i/4)*(h-60);
+    ctx.moveTo(40, y); ctx.lineTo(w-40, y);
+  }
   ctx.stroke();
-  
-  // Power Points
-  ctx.fillStyle = '#f59e0b';
-  sorted.forEach(d => {
-    ctx.beginPath(); ctx.arc(toX(d.load), toY_P(d.p), 4, 0, Math.PI*2); ctx.fill();
-  });
 
-  // 2. Draw 1RM Line (Linear Regression of Velocity)
-  const reg = linearRegression(xs, vs);
-  if (reg && reg.m < 0) { // Slope must be negative
+  // Axis Labels
+  ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--muted');
+  ctx.font = "10px sans-serif";
+  ctx.fillText("0 m/s", 5, h-30); ctx.fillText(maxV+" m/s", 5, 30); // Left
+  ctx.textAlign = "right";
+  ctx.fillText("0 W", w-5, h-30); ctx.fillText(maxP.toFixed(0)+" W", w-5, 30); // Right
+  
+  // 1. Draw Linear Fit (Velocity) - BLUE
+  if (state.fit && state.fit.lin) {
     ctx.beginPath();
-    ctx.strokeStyle = '#3b82f6'; // Blue Velocity
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--vel');
     ctx.lineWidth = 2;
-    // Draw line from minX to x-intercept (Speed=0)
-    const y1 = reg.m * minX + reg.b;
-    const xZero = -reg.b / reg.m; // Theoretical 1RM (Velocity = 0)
-    const xTarget = Math.min(xZero, maxX * 1.5); // Don't draw to infinity
-    const y2 = reg.m * xTarget + reg.b;
-    
-    ctx.moveTo(toX(minX), toY_V(y1));
-    ctx.lineTo(toX(xTarget), toY_V(y2));
+    const y1 = state.fit.lin.m * minLoad + state.fit.lin.c;
+    const y2 = state.fit.lin.m * state.fit.oneRM + state.fit.lin.c; // Should be 0
+    ctx.moveTo(toX(minLoad), toY_V(y1));
+    ctx.lineTo(toX(state.fit.oneRM), toY_V(y2));
     ctx.stroke();
+    
+    // 1RM Dot
+    ctx.beginPath(); ctx.fillStyle = 'red';
+    ctx.arc(toX(state.fit.oneRM), toY_V(0), 4, 0, Math.PI*2); ctx.fill();
+    ctx.fillText("1RM", toX(state.fit.oneRM), toY_V(0)-10);
   }
 
-  // Velocity Points
-  ctx.fillStyle = '#3b82f6';
+  // 2. Draw Polynomial Fit (Power) - ORANGE
+  if (state.fit && state.fit.poly) {
+    ctx.beginPath();
+    ctx.strokeStyle = getComputedStyle(document.body).getPropertyValue('--pow');
+    ctx.lineWidth = 2;
+    for (let x = minLoad; x <= state.fit.oneRM; x += rangeX/50) {
+      const y = state.fit.poly.a*x*x + state.fit.poly.b*x + state.fit.poly.c;
+      if(y < 0) continue;
+      const px = toX(x), py = toY_P(y);
+      if (x===minLoad) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    
+    // Optimal Load Dot
+    ctx.beginPath(); ctx.fillStyle = 'orange';
+    ctx.arc(toX(state.fit.loadOpt), toY_P(state.fit.pMax), 5, 0, Math.PI*2); ctx.fill();
+  }
+
+  // 3. Draw Raw Points
   data.forEach(d => {
-    ctx.beginPath(); ctx.arc(toX(d.load), toY_V(d.vMean), 4, 0, Math.PI*2); ctx.fill();
+    // Vel (Blue Square)
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--vel');
+    const xv = toX(d.load), yv = toY_V(d.vMean);
+    ctx.fillRect(xv-3, yv-3, 6, 6);
+
+    // Pow (Orange Circle)
+    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--pow');
+    const xp = toX(d.load), yp = toY_P(d.p);
+    ctx.beginPath(); ctx.arc(xp, yp, 4, 0, Math.PI*2); ctx.fill();
   });
 }
 
@@ -517,11 +600,12 @@ function updateChart() {
 $('themeBtn').onclick = () => {
   const next = $('app').getAttribute('data-theme')==='dark'?'light':'dark';
   $('app').setAttribute('data-theme', next);
+  updateChart();
 };
-$('btnReset').onclick = () => { if(confirm('Reset?')) {state.history=[]; updateTable(); updateChart();} };
+$('btnReset').onclick = () => { if(confirm('Reset?')) {state.history=[]; state.fit=null; ui.btnCalc.style.display='none'; ui.resBox.style.display='none'; updateTable(); updateChart();} };
 $('btnExport').onclick = () => {
   const csv = "Load,Vmean,Vpeak,Apeak,Power\n"+state.history.map(r=>`${r.load},${r.vMean},${r.vPeak},${r.aPeak},${r.p}`).join('\n');
-  const a = document.createElement('a'); a.href='data:text/csv,'+encodeURI(csv); a.download='vbt.csv'; a.click();
+  const a = document.createElement('a'); a.href='data:text/csv;charset=utf-8,'+encodeURI(csv); a.download='vbt_export.csv'; a.click();
 };
 
 </script>

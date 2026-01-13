@@ -3,470 +3,137 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <title>Vitesse Muscu - Workflow</title>
+  <title>Vitesse Muscu - Debug</title>
   <style>
-    :root {
-      --bg: #0f172a;       /* Bleu nuit très sombre */
-      --card: #1e293b;     /* Gris bleuté */
-      --text: #f8fafc;     /* Blanc cassé */
-      --accent: #3b82f6;   /* Bleu vif (Actions principales) */
-      --valid: #22c55e;    /* Vert (Validation) */
-      --danger: #ef4444;   /* Rouge (Stop/Reset) */
-      --border: #334155;
-    }
+    :root { --bg:#0f172a; --card:#1e293b; --text:#f8fafc; --accent:#3b82f6; --valid:#22c55e; }
+    body { background: var(--bg); color: var(--text); font-family: sans-serif; margin: 0; padding: 20px; display: flex; flex-direction: column; height: 100vh; }
     
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* --- EN-TÊTE --- */
-    header {
-      padding: 15px;
-      text-align: center;
-      border-bottom: 1px solid var(--border);
-      background: var(--card);
-    }
-    h1 { margin: 0; font-size: 18px; font-weight: 700; }
-    .status { font-size: 12px; color: #94a3b8; margin-top: 4px; }
-    .status.on { color: var(--valid); }
-
-    /* --- CONTENEUR PRINCIPAL --- */
-    main {
-      flex: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      max-width: 600px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    /* --- INPUTS --- */
-    .inputs-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    select, input {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: white;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 16px;
-      width: 100%;
-      text-align: center;
-    }
-    label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px; }
-
-    /* --- AFFICHAGE VITESSE (GROS) --- */
-    .display-card {
-      background: var(--card);
-      border-radius: 20px;
-      padding: 30px 10px;
-      text-align: center;
-      border: 1px solid var(--border);
-    }
-    .big-number {
-      font-size: 70px;
-      font-weight: 800;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-      margin: 10px 0;
-    }
-    .unit { font-size: 18px; color: #94a3b8; }
+    .card { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; margin-bottom: 15px; border: 1px solid #334155; }
+    .big { font-size: 80px; font-weight: 800; margin: 10px 0; font-variant-numeric: tabular-nums; }
     
-    /* --- BOUTONS --- */
-    .btn {
-      width: 100%;
-      padding: 16px;
-      border: none;
-      border-radius: 14px;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      transition: transform 0.1s, opacity 0.2s;
-    }
-    .btn:active { transform: scale(0.98); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .btn-start { background: var(--accent); color: white; }
-    .btn-validate { background: var(--valid); color: white; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
-    .btn-calc { background: white; color: var(--bg); border: 2px solid white; margin-top: 20px; }
-    .btn-reset { background: transparent; color: var(--danger); font-size: 12px; margin-top: 10px; text-transform: none; }
-
-    /* --- RESULTATS (Cachés au début) --- */
-    #resultsSection {
-      display: none; /* Masqué par défaut */
-      animation: slideUp 0.3s ease-out;
-    }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .chart-container {
-      background: var(--card);
-      padding: 10px;
-      border-radius: 15px;
-      margin-bottom: 15px;
-    }
+    button { width: 100%; padding: 20px; border-radius: 15px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+    .btn-blue { background: var(--accent); color: white; }
+    .btn-green { background: var(--valid); color: white; display: none; }
     
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-    th { text-align: left; color: #94a3b8; padding: 8px; border-bottom: 1px solid var(--border); }
-    td { padding: 8px; border-bottom: 1px solid var(--border); }
-    
-    /* Utilitaires visuels */
-    .hidden { display: none !important; }
-    .blink { animation: blinker 1s linear infinite; color: var(--accent); }
-    @keyframes blinker { 50% { opacity: 0.5; } }
-
+    #debug { font-family: monospace; font-size: 12px; color: #f59e0b; margin-top: auto; white-space: pre-wrap; word-break: break-all; border-top: 1px solid #333; padding-top: 10px; }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Vitesse Muscu</h1>
-    <div id="statusMsg" class="status">Capteurs inactifs</div>
-  </header>
+  <div style="text-align:center; margin-bottom:20px;">
+    <h3>Test Capteurs</h3>
+    <div style="color:#94a3b8; font-size:14px;">Secouez le téléphone pour tester</div>
+  </div>
 
-  <main>
-    
-    <div class="inputs-row">
-      <div>
-        <label>Exercice</label>
-        <select id="exerciseSel">
-          <option value="bench">Bench Press</option>
-          <option value="squat">Squat</option>
-          <option value="deadlift">Deadlift</option>
-        </select>
-      </div>
-      <div>
-        <label>Charge (kg)</label>
-        <input type="number" id="loadInput" value="60" step="1">
-      </div>
-    </div>
+  <div class="card">
+    <div style="color:#94a3b8; font-size:12px;">VITESSE MAX</div>
+    <div id="val" class="big">0.00</div>
+    <div style="color:#94a3b8;">m/s</div>
+  </div>
 
-    <div class="display-card">
-      <div style="font-size:14px; color:#94a3b8; text-transform:uppercase;">Vitesse Pic</div>
-      <div id="velocityDisplay" class="big-number">--</div>
-      <div class="unit">m/s</div>
-    </div>
+  <button id="btnStart" class="btn-blue">ACTIVER CAPTEURS</button>
+  <button id="btnVal" class="btn-green">VALIDER (Reset)</button>
 
-    <div id="actionArea">
-      <button id="btnStart" class="btn btn-start">Activer / Démarrer</button>
-      
-      <button id="btnValidate" class="btn btn-validate hidden">Valider cette vitesse</button>
-      
-      <div id="msgWaiting" class="hidden" style="text-align:center; color:var(--accent); padding:15px;">
-        <span class="blink">● En mesure...</span>
-      </div>
-    </div>
-
-    <div style="text-align:center;">
-      <div id="repCounter" style="color:#94a3b8; font-size:13px; margin-bottom:5px;">0 répétitions validées</div>
-      <button id="btnCalculate" class="btn btn-calc" disabled>Calculer & Graphique</button>
-      <button id="btnReset" class="btn btn-reset">Tout effacer (Reset)</button>
-    </div>
-
-    <div id="resultsSection">
-      <h3 style="margin:0 0 10px 0; font-size:16px;">Résultats & Profil</h3>
-      
-      <div class="chart-container">
-        <canvas id="myChart" width="300" height="200"></canvas>
-      </div>
-
-      <div class="chart-container">
-        <table>
-          <thead>
-            <tr>
-              <th>Charge</th>
-              <th>Vitesse</th>
-              <th>Puis.</th>
-              <th>Suppr.</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </main>
+  <div id="debug">En attente d'activation...</div>
 
 <script>
-// --- VARIABLES GLOBALES ---
-let isMeasuring = false;
-let currentVelocity = 0;
-let maxVelocityInRep = 0;
-let aEMA = 0; // Accélération lissée
-let v = 0;    // Vitesse intégrée
+const btnStart = document.getElementById('btnStart');
+const btnVal = document.getElementById('btnVal');
+const valEl = document.getElementById('val');
+const debugEl = document.getElementById('debug');
+
+let maxV = 0;
+let v = 0;
 let lastT = 0;
-let validatedData = []; // Stocke les reps validées {load, vel, power}
+let active = false;
 
-// Seuils physiques
-const THR_START = 2.0; // m/s² pour débuter
-const THR_STOP = 1.0;  // m/s² pour arrêter
-const CALIB = 1.0;     // Calibration factor (ajustable si besoin)
+// Variables pour retirer la gravité
+let grav = { x: 0, y: 0, z: 0 };
 
-// DOM Elements
-const els = {
-  btnStart: document.getElementById('btnStart'),
-  btnValidate: document.getElementById('btnValidate'),
-  btnCalculate: document.getElementById('btnCalculate'),
-  btnReset: document.getElementById('btnReset'),
-  velDisplay: document.getElementById('velocityDisplay'),
-  statusMsg: document.getElementById('statusMsg'),
-  msgWaiting: document.getElementById('msgWaiting'),
-  resultsSection: document.getElementById('resultsSection'),
-  tableBody: document.getElementById('tableBody'),
-  repCounter: document.getElementById('repCounter'),
-  loadInput: document.getElementById('loadInput'),
-  exerciseSel: document.getElementById('exerciseSel'),
-  canvas: document.getElementById('myChart')
-};
-
-// --- LOGIQUE CAPTEURS ---
-async function initSensors() {
+btnStart.addEventListener('click', async () => {
+  // 1. Demande explicite iOS
   if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
     try {
-      const perm = await DeviceMotionEvent.requestPermission();
-      if (perm !== 'granted') return alert('Permission refusée');
-    } catch(e) { return alert(e); }
+      const response = await DeviceMotionEvent.requestPermission();
+      if (response === 'granted') {
+        start();
+      } else {
+        alert("Permission refusée par l'iPhone. Allez dans Réglages > Safari > Effacer historique et données pour réinitialiser le choix.");
+      }
+    } catch (e) {
+      alert("Erreur technique : " + e);
+    }
+  } else {
+    // Android ou vieux iOS
+    start();
   }
-  
-  window.addEventListener('devicemotion', processMotion, true);
-  els.statusMsg.textContent = "Capteurs prêts • En attente";
-  els.statusMsg.classList.add('on');
-  
-  // UI Switch
-  els.btnStart.classList.add('hidden');
-  els.msgWaiting.classList.remove('hidden');
-  isMeasuring = true;
-  v = 0; 
-  maxVelocityInRep = 0;
-  els.velDisplay.textContent = "0.00";
+});
+
+function start() {
+  window.addEventListener('devicemotion', handleMotion, true);
+  btnStart.style.display = 'none';
+  active = true;
+  debugEl.textContent = "Capteurs actifs. Bougez le téléphone !";
 }
 
-function processMotion(event) {
-  if (!isMeasuring) return;
+function handleMotion(event) {
+  if (!active) return;
 
-  // 1. Récupération Accel (méthode robuste incluant gravité simplifiée)
-  let ax = event.acceleration.x || 0;
-  let ay = event.acceleration.y || 0;
-  let az = event.acceleration.z || 0;
+  // Récupération des données brutes
+  let ax = event.acceleration.x;
+  let ay = event.acceleration.y;
+  let az = event.acceleration.z;
   
-  // Fallback Android parfois nécessaire
-  if (!ax && event.accelerationIncludingGravity) {
-     az = event.accelerationIncludingGravity.z - 9.81;
+  // Si 'acceleration' est null (certains Androids), on utilise 'accelerationIncludingGravity'
+  let source = "ACCEL";
+  if (ax === null && event.accelerationIncludingGravity) {
+    source = "GRAV_FALLBACK";
+    const g = event.accelerationIncludingGravity;
+    // Filtre passe-bas simple pour isoler la gravité
+    grav.x = grav.x * 0.9 + g.x * 0.1;
+    grav.y = grav.y * 0.9 + g.y * 0.1;
+    grav.z = grav.z * 0.9 + g.z * 0.1;
+    
+    ax = g.x - grav.x;
+    ay = g.y - grav.y;
+    az = g.z - grav.z;
   }
 
+  // Calcul vecteur total
   const a = Math.sqrt(ax*ax + ay*ay + az*az);
-  
-  // 2. Lissage & Intégration (Euler)
+
+  // DEBUG : Affichage en direct des valeurs brutes
+  // Si ça reste à 0 ici, c'est que le téléphone ne donne rien.
+  debugEl.textContent = `Source: ${source}\nX: ${ax?.toFixed(2)}\nY: ${ay?.toFixed(2)}\nZ: ${az?.toFixed(2)}\nTotal A: ${a.toFixed(2)}`;
+
+  // Calcul Vitesse (Intégration simple)
   const now = performance.now();
   const dt = (now - lastT) / 1000;
   lastT = now;
-  if (dt > 1) return; // Sauter les gros lags
+  if (dt > 1) return; // Ignore les sauts de temps
 
-  aEMA = aEMA * 0.8 + a * 0.2; // Lissage
-
-  // 3. Logique de Rep
-  if (aEMA > THR_START) {
-    // En mouvement
-    v += aEMA * dt;
-    if (v > maxVelocityInRep) maxVelocityInRep = v;
-    els.velDisplay.style.color = "#3b82f6"; // Bleu pendant l'effort
-  } else {
-    // Ralentissement / Arrêt
-    v -= 0.5 * dt; // Friction virtuelle
-    if (v < 0) v = 0;
-    
-    // Si on vient de finir une rep significative
-    if (maxVelocityInRep > 0.15 && aEMA < THR_STOP && v < 0.1) {
-      repFinished();
+  // Seuil abaissé à 0.5 pour le test (très sensible)
+  if (a > 0.5) { 
+    v += a * dt;
+    if (v > maxV) {
+      maxV = v;
+      valEl.textContent = maxV.toFixed(2);
+      valEl.style.color = "#22c55e"; // Vert
+      btnVal.style.display = 'block';
     }
+  } else {
+    // Retour au calme
+    v *= 0.9; // Friction
   }
-  
-  // Affichage Live (optionnel, on affiche surtout le Pic à la fin)
-  // els.velDisplay.textContent = v.toFixed(2); 
 }
 
-function repFinished() {
-  isMeasuring = false; // On met en pause la mesure
-  
-  // Afficher le résultat
-  els.velDisplay.textContent = maxVelocityInRep.toFixed(2);
-  els.velDisplay.style.color = "#22c55e"; // Vert
-  
-  // UI : Montrer le bouton Valider
-  els.msgWaiting.classList.add('hidden');
-  els.btnValidate.classList.remove('hidden');
-}
-
-// --- LOGIQUE BOUTONS ---
-
-els.btnStart.addEventListener('click', () => {
-  initSensors();
-});
-
-els.btnValidate.addEventListener('click', () => {
-  // 1. Sauvegarder les données
-  const load = parseFloat(els.loadInput.value);
-  const vel = parseFloat(els.velDisplay.textContent);
-  const power = load * 9.81 * vel;
-  
-  validatedData.push({ load, vel, power });
-  
-  // 2. Update UI counters
-  els.repCounter.textContent = `${validatedData.length} répétitions validées`;
-  els.btnCalculate.disabled = false;
-  els.btnCalculate.style.background = "#fff"; // Active visual state
-  els.btnCalculate.style.color = "#000";
-
-  // 3. Reset pour la prochaine rep
-  els.btnValidate.classList.add('hidden');
-  els.msgWaiting.classList.remove('hidden');
-  els.velDisplay.textContent = "0.00";
-  els.velDisplay.style.color = "#f8fafc";
-  
-  // 4. Relancer la mesure
-  maxVelocityInRep = 0;
+btnVal.addEventListener('click', () => {
+  maxV = 0;
   v = 0;
-  isMeasuring = true;
+  valEl.textContent = "0.00";
+  valEl.style.color = "#f8fafc";
+  btnVal.style.display = 'none';
 });
-
-els.btnCalculate.addEventListener('click', () => {
-  // Stop mesure
-  isMeasuring = false;
-  window.removeEventListener('devicemotion', processMotion);
-  els.msgWaiting.classList.add('hidden');
-  els.btnStart.classList.remove('hidden');
-  els.btnStart.textContent = "Reprendre mesures";
-
-  // Afficher la section résultats
-  els.resultsSection.style.display = 'block';
-  
-  renderTable();
-  drawChart();
-  
-  // Scroll vers le bas
-  els.resultsSection.scrollIntoView({ behavior: 'smooth' });
-});
-
-els.btnReset.addEventListener('click', () => {
-  if(confirm("Tout effacer ?")) {
-    validatedData = [];
-    els.tableBody.innerHTML = "";
-    els.resultsSection.style.display = 'none';
-    els.repCounter.textContent = "0 répétitions validées";
-    els.btnCalculate.disabled = true;
-    location.reload(); // Plus simple pour reset les capteurs
-  }
-});
-
-// --- TABLEAU & GRAPHIQUE ---
-
-function renderTable() {
-  els.tableBody.innerHTML = "";
-  validatedData.forEach((d, index) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${d.load} kg</td>
-      <td><strong>${d.vel.toFixed(2)}</strong> m/s</td>
-      <td>${d.power.toFixed(0)} W</td>
-      <td style="color:#ef4444; cursor:pointer;" onclick="deleteRow(${index})">×</td>
-    `;
-    els.tableBody.prepend(tr); // Les plus récents en haut
-  });
-}
-
-window.deleteRow = (index) => {
-  validatedData.splice(index, 1);
-  renderTable();
-  drawChart();
-  els.repCounter.textContent = `${validatedData.length} répétitions validées`;
-};
-
-function drawChart() {
-  const ctx = els.canvas.getContext('2d');
-  const w = els.canvas.width;
-  const h = els.canvas.height;
-  
-  // Clear
-  ctx.clearRect(0, 0, w, h);
-  ctx.fillStyle = "#1e293b"; // Fond chart
-  ctx.fillRect(0,0,w,h);
-  
-  if (validatedData.length === 0) return;
-
-  // Echelles simplifiées
-  const maxL = Math.max(...validatedData.map(d => d.load)) * 1.2 || 100;
-  const maxV = Math.max(...validatedData.map(d => d.vel)) * 1.2 || 1.0;
-  
-  const pad = 30;
-  const graphW = w - pad*2;
-  const graphH = h - pad*2;
-
-  // Axes
-  ctx.strokeStyle = "#334155";
-  ctx.beginPath();
-  ctx.moveTo(pad, pad); ctx.lineTo(pad, h-pad); ctx.lineTo(w-pad, h-pad);
-  ctx.stroke();
-  
-  // Points
-  validatedData.forEach(d => {
-    const x = pad + (d.load / maxL) * graphW;
-    const y = (h - pad) - (d.vel / maxV) * graphH;
-    
-    ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI*2);
-    ctx.fillStyle = "#3b82f6";
-    ctx.fill();
-    ctx.strokeStyle = "white";
-    ctx.stroke();
-  });
-  
-  // Régression linéaire simple (Estimation)
-  if (validatedData.length >= 2) {
-    // Calcul simple pente (très approximatif pour démo visuelle)
-    // Idéalement : moindre carrés
-    const p1 = validatedData[0];
-    const p2 = validatedData[validatedData.length-1];
-    
-    // Dessin ligne
-    ctx.strokeStyle = "rgba(59, 130, 246, 0.5)";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    // On relie juste min et max pour l'instant visuellement
-    // (Une vraie régression demande plus de maths ici)
-    const minL = Math.min(...validatedData.map(d=>d.load));
-    const maxL_d = Math.max(...validatedData.map(d=>d.load));
-    // Trouver les points correspondants (approximation)
-    // ... Pour ce script léger, on ne trace pas la ligne mathématique complexe
-    // pour éviter les erreurs JS sans librairie externe.
-  }
-  
-  // Texte Axes
-  ctx.fillStyle = "#94a3b8";
-  ctx.font = "10px Arial";
-  ctx.fillText("0", pad-10, h-pad+10);
-  ctx.fillText("Charge ->", w-50, h-pad+10);
-  ctx.fillText("Vitesse", 10, pad-10);
-}
 
 </script>
 </body>

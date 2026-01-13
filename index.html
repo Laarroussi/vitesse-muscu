@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vitesse live (estimateur)</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; padding: 16px; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; max-width:620px; }
+    .card { border:1px solid #ddd; border-radius:12px; padding:12px; }
+    .k { font-size:12px; opacity:.7; }
+    .v { font-size:30px; font-weight:800; }
+    button { font-size:16px; padding:10px 14px; margin-right:8px; }
+    .ok { color:#0a7; font-weight:800; }
+    .no { color:#c00; font-weight:800; }
+    .pill { display:inline-block; padding:4px 10px; border-radius:999px; border:1px solid #ddd; margin-left:8px; }
+  </style>
+</head>
+<body>
+  <h1>Vitesse (live) — estimation</h1>
+
+  <div style="margin-bottom:12px">
+    <button id="start">Démarrer</button>
+    <button id="stop" disabled>Stop</button>
+    <button id="reset" disabled>Reset rep</button>
+    <span id="status" class="no">OFF</span>
+    <span id="rep" class="pill">rep: —</span>
+  </div>
+
+  <div class="grid">
+    <div class="card"><div class="k">Vitesse instantanée |v| [m/s]</div><div class="v" id="v">—</div></div>
+    <div class="card"><div class="k">Vitesse max rep (Vmax) [m/s]</div><div class="v" id="vmax">—</div></div>
+    <div class="card"><div class="k">Accélération (norme) [m/s²]</div><div class="v" id="a">—</div></div>
+    <div class="card"><div class="k">Fréquence approx. [Hz]</div><div class="v" id="hz">—</div></div>
+  </div>
+
+  <p style="margin-top:14px; max-width:620px">
+    Réglages : seuil de démarrage rep = <b>1.2 m/s²</b>, seuil de fin rep = <b>0.6 m/s²</b>,
+    lissage EMA léger. À ajuster selon l’exercice (développé couché / squat / tirage).
+  </p>
+
+<script>
+  const elV = document.getElementById("v");
+  const elVmax = document.getElementById("vmax");
+  const elA = document.getElementById("a");
+  const elHz = document.getElementById("hz");
+  const status = document.getElementById("status");
+  const repEl = document.getElementById("rep");
+
+  const startB = document.getElementById("start");
+  const stopB = document.getElementById("stop");
+  const resetB = document.getElementById("reset");
+
+  // --- Réglages (à tuner) ---
+  const START_THR = 1.2;  // m/s² : démarre une rep si au-dessus
+  const STOP_THR  = 0.6;  // m/s² : finit la rep si en dessous pendant un court moment
+  const STOP_HOLD_MS = 180; // ms sous STOP_THR pour valider fin
+  const EMA_ALPHA = 0.25; // 0..1 (plus grand = moins lissé)
+
+  // --- Etat ---
+  let running = false;
+  let lastT = null;
+  let hzEMA = null;
+
+  let aEMA = 0;     // accélération lissée (norme)
+  let v = 0;        // vitesse (scalaire estimée : intégration de la norme)
+  let vmax = 0;
+
+  let inRep = false;
+  let repCount = 0;
+  let belowSince = null;
+
+  function norm3(x,y,z){
+    x = Number.isFinite(x) ? x : 0;
+    y = Number.isFinite(y) ? y : 0;
+    z = Number.isFinite(z) ? z : 0;
+    return Math.sqrt(x*x + y*y + z*z);
+  }
+
+  function onMotion(e){
+    if(!running) return;
+
+    const now = performance.now();
+    if(lastT == null){ lastT = now; return; }
+    const dt = (now - lastT) / 1000; // s
+    lastT = now;
+    if(dt <= 0 || dt > 0.2) return; // ignore gros trous
+
+    // Fréquence approx
+    const hz = 1/dt;
+    hzEMA = hzEMA == null ? hz : (0.9*hzEMA + 0.1*hz);
+    elHz.textContent = hzEMA.toFixed(1);
+
+    // Accélération: préférence "sans gravité"
+    const a = e.acceleration;
+    const ag = e.accelerationIncludingGravity;
+
+    let an = null;
+    if(a && (a.x!=null || a.y!=null || a.z!=null)){
+      an = norm3(a.x,a.y,a.z);
+    } else if(ag){
+      // fallback: moins propre (gravité incluse) -> rep plus difficile
+      an = norm3(ag.x,ag.y,ag.z);
+    } else {
+      return;
+    }
+
+    // Lissage EMA
+    aEMA = (1-EMA_ALPHA)*aEMA + EMA_ALPHA*an;
+    elA.textContent = aEMA.toFixed(2);
+
+    // Détection rep (simple)
+    if(!inRep){
+      // v et vmax remis à zéro en attente
+      v = 0;
+      vmax = 0;
+
+      if(aEMA > START_THR){
+        inRep = true;
+        belowSince = null;
+        repCount++;
+        repEl.textContent = `rep: ${repCount} (en cours)`;
+      }
+      elV.textContent = "0.00";
+      elVmax.textContent = "0.00";
+      return;
+    }
+
+    // Intégration pendant la rep :
+    // On intègre la norme -> donne une "vitesse scalaire" (pas directionnelle).
+    v = Math.max(0, v + aEMA*dt); // clamp à 0 (on évite vitesse négative)
+    vmax = Math.max(vmax, v);
+
+    elV.textContent = v.toFixed(2);
+    elVmax.textContent = vmax.toFixed(2);
+
+    // Fin de rep: aEMA passe sous STOP_THR suffisamment longtemps
+    if(aEMA < STOP_THR){
+      if(belowSince == null) belowSince = now;
+      if(now - belowSince > STOP_HOLD_MS){
+        inRep = false;
+        repEl.textContent = `rep: ${repCount} (terminée)`;
+      }
+    } else {
+      belowSince = null;
+    }
+  }
+
+  async function start(){
+    if(typeof DeviceMotionEvent !== "undefined" &&
+       typeof DeviceMotionEvent.requestPermission === "function"){
+      const res = await DeviceMotionEvent.requestPermission();
+      if(res !== "granted") return;
+    }
+    running = true;
+    lastT = null;
+    hzEMA = null;
+    aEMA = 0; v = 0; vmax = 0;
+    inRep = false; belowSince = null;
+    repCount = 0;
+    repEl.textContent = "rep: —";
+    status.textContent = "ON"; status.className = "ok";
+    startB.disabled = true; stopB.disabled = false; resetB.disabled = false;
+
+    window.addEventListener("devicemotion", onMotion, { passive:true });
+  }
+
+  function stop(){
+    running = false;
+    window.removeEventListener("devicemotion", onMotion);
+    status.textContent = "OFF"; status.className = "no";
+    startB.disabled = false; stopB.disabled = true;
+  }
+
+  function resetRep(){
+    // reset uniquement rep en cours / vmax
+    inRep = false;
+    belowSince = null;
+    aEMA = 0; v = 0; vmax = 0;
+    repCount = 0;
+    repEl.textContent = "rep: —";
+    elV.textContent = "0.00";
+    elVmax.textContent = "0.00";
+    elA.textContent = "0.00";
+  }
+
+  startB.addEventListener("click", start);
+  stopB.addEventListener("click", stop);
+  resetB.addEventListener("click", resetRep);
+</script>
+</body>
+</html>

@@ -3,149 +3,149 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>VBT iPhone — vitesse/power + 1RM</title>
+  <title>VBT iPhone — Pro</title>
   <style>
     :root{
-      --bg:#f6f7fb; --card:#ffffff; --text:#0f172a; --muted:#475569;
-      --border:#e2e8f0; --accent:#2563eb; --accent2:#0ea5e9;
-      --ok:#16a34a; --warn:#f59e0b; --bad:#dc2626;
-      --shadow: 0 10px 24px rgba(2,6,23,.08);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --bg:#f8f9fc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
+      --border:#e2e8f0; --accent:#3b82f6; --accent2:#0ea5e9;
+      --ok:#22c55e; --warn:#f59e0b; --bad:#ef4444;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
     [data-theme="dark"]{
-      --bg:#0b0d10; --card:#121722; --text:#e9eef5; --muted:#9aa7bd;
-      --border:#263249; --accent:#1e6bff; --accent2:#22c3ff;
-      --shadow: 0 10px 28px rgba(0,0,0,.35);
+      --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
+      --border:#334155; --accent:#60a5fa; --accent2:#38bdf8;
+      --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
-    body{ margin:0; background:var(--bg); color:var(--text); }
-    .wrap{ max-width:980px; margin:0 auto; padding:16px; padding-bottom:26px; }
-    header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-    h1{ font-size:18px; margin:0 0 6px; letter-spacing:-.01em; }
-    .muted{ color:var(--muted); font-size:12.5px; line-height:1.35; }
+    body{ margin:0; background:var(--bg); color:var(--text); transition: background 0.3s, color 0.3s; }
+    .wrap{ max-width:1000px; margin:0 auto; padding:16px; padding-bottom:40px; }
+    
+    /* Header */
+    header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
+    h1{ font-size:18px; margin:0 0 4px; font-weight:800; letter-spacing:-0.5px; }
+    .muted{ color:var(--muted); font-size:13px; line-height:1.4; }
+    
+    /* Cards */
     .card{
       background:var(--card); border:1px solid var(--border);
-      border-radius:16px; padding:14px; box-shadow:var(--shadow);
+      border-radius:20px; padding:16px; box-shadow:var(--shadow);
+      margin-bottom:16px; transition: background 0.3s, border-color 0.3s;
     }
-    .row{ display:grid; gap:12px; grid-template-columns:1fr; }
-    @media (min-width: 860px){ .row{ grid-template-columns: 1.15fr .85fr; } }
-    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+
+    /* Grids */
+    .row{ display:grid; gap:16px; grid-template-columns:1fr; }
+    @media (min-width: 860px){ .row{ grid-template-columns: 1.2fr 0.8fr; } }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+
+    /* Inputs & Buttons */
     button{
-      border:0; border-radius:12px; padding:10px 12px;
-      font-weight:650; cursor:pointer; font-size:14px;
-      background:var(--accent); color:white;
+      border:0; border-radius:12px; padding:12px 16px;
+      font-weight:600; cursor:pointer; font-size:14px;
+      background:var(--accent); color:white; transition: transform 0.1s, opacity 0.2s;
     }
+    button:active{ transform:scale(0.98); }
     button.secondary{ background:transparent; color:var(--text); border:1px solid var(--border); }
-    button.danger{ background:var(--bad); }
-    button:disabled{ opacity:.55; cursor:not-allowed; }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      font-size:12px; padding:6px 10px; border-radius:999px;
-      border:1px solid var(--border); background:transparent;
-      color:var(--muted);
+    button.danger{ background:var(--bad); color:white; }
+    button:disabled{ opacity:0.5; cursor:not-allowed; }
+    
+    label{ display:block; font-size:12px; font-weight:600; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+    input, select{
+      width:100%; box-sizing:border-box; background:var(--bg); color:var(--text);
+      border:1px solid var(--border); border-radius:12px;
+      padding:12px; font-size:15px; outline:none; appearance:none;
     }
-    .dot{ width:10px; height:10px; border-radius:50%; background:#94a3b8; }
-    .dot.ok{ background:var(--ok); }
-    .dot.warn{ background:var(--warn); }
+    input:focus, select:focus{ border-color:var(--accent); ring:2px var(--accent); }
+
+    /* Metrics */
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:16px; }
+    .pill{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:12px; padding:6px 12px; border-radius:20px;
+      border:1px solid var(--border); background:var(--bg); color:var(--muted); font-weight:500;
+    }
+    .dot{ width:8px; height:8px; border-radius:50%; background:#cbd5e1; }
+    .dot.ok{ background:var(--ok); box-shadow: 0 0 8px var(--ok); }
+    .dot.warn{ background:var(--warn); box-shadow: 0 0 8px var(--warn); }
     .dot.bad{ background:var(--bad); }
 
-    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
-    @media (max-width: 420px){
-      .grid2{ grid-template-columns: 1fr; }
-      .grid3{ grid-template-columns: 1fr; }
-    }
-
-    label{ display:block; font-size:12px; color:var(--muted); margin:2px 0 6px; }
-    input, select{
-      width:100%; box-sizing:border-box;
-      background:transparent; color:var(--text);
-      border:1px solid var(--border); border-radius:12px;
-      padding:10px 12px; font-size:14px; outline:none;
-    }
-    input:focus, select:focus{ border-color:var(--accent2); }
-
     .metricBig{
-      border:1px solid var(--border); border-radius:16px;
-      padding:12px; background:transparent;
+      text-align:center; padding:20px; border-radius:20px;
+      background: linear-gradient(135deg, rgba(59,130,246,0.05) 0%, rgba(59,130,246,0.01) 100%);
+      border:1px solid var(--border);
     }
-    .metricBig .k{ font-size:12px; color:var(--muted); }
-    .metricBig .v{ font-size:44px; font-weight:850; letter-spacing:-.02em; }
-    .metricBig .u{ font-size:14px; color:var(--muted); margin-left:6px; }
+    .metricBig .k{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+    .metricBig .v{ font-size:56px; font-weight:900; letter-spacing:-2px; line-height:1; font-variant-numeric: tabular-nums; }
+    .metricBig .u{ font-size:16px; color:var(--muted); font-weight:500; margin-left:4px; }
+
     .metricSmall{
-      border:1px solid var(--border); border-radius:14px;
-      padding:10px; background:transparent;
+      border:1px solid var(--border); border-radius:16px; padding:12px;
+      background:var(--bg); text-align:center;
     }
-    .metricSmall .k{ font-size:12px; color:var(--muted); }
-    .metricSmall .v{ font-size:20px; font-weight:750; }
+    .metricSmall .k{ font-size:11px; color:var(--muted); margin-bottom:4px; }
+    .metricSmall .v{ font-size:20px; font-weight:700; font-variant-numeric: tabular-nums; }
 
+    /* Proposal Box */
     .proposal{
-      border:1px dashed var(--border); border-radius:16px;
-      padding:12px; background:transparent;
+      border:2px solid var(--accent); border-radius:16px; padding:16px;
+      background:var(--bg); margin-top:16px; animation: slideIn 0.3s ease-out;
     }
-    .proposal h2{ margin:0 0 8px; font-size:14px; }
-    .canvasWrap{
-      border:1px solid var(--border); border-radius:16px; padding:10px;
-      background:transparent;
-    }
-    canvas{ width:100%; height:260px; display:block; }
+    @keyframes slideIn { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    .proposal h2{ margin:0 0 10px; font-size:14px; color:var(--accent); font-weight:bold; }
+    
+    /* Chart */
+    .canvasWrap{ position:relative; width:100%; height:300px; margin-top:16px; }
+    canvas{ width:100%; height:100%; }
 
-    details summary{
-      cursor:pointer; color:var(--muted); font-weight:650; font-size:13px;
-      list-style:none;
-    }
-    details summary::-webkit-details-marker{ display:none; }
-
-    table{ width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px; }
-    th,td{ border-bottom:1px solid var(--border); padding:8px 6px; text-align:left; }
-    th{ color:var(--muted); font-weight:650; }
+    /* Table */
+    table{ width:100%; border-collapse:collapse; margin-top:16px; font-size:13px; }
+    th{ text-align:left; color:var(--muted); font-weight:600; padding:8px; border-bottom:1px solid var(--border); }
+    td{ padding:8px; border-bottom:1px solid var(--border); color:var(--text); }
     .right{ text-align:right; }
-    .topline{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+    /* Theme Toggle */
     .toggle{
-      display:inline-flex; gap:8px; align-items:center;
-      border:1px solid var(--border); border-radius:999px;
-      padding:6px 10px; cursor:pointer; user-select:none;
-      color:var(--muted); font-size:12px;
+      cursor:pointer; padding:8px 12px; border-radius:20px;
+      background:var(--card); border:1px solid var(--border);
+      font-size:14px; user-select:none;
     }
+
+    details summary { padding: 10px 0; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 
 <body>
 <div class="wrap" id="app" data-theme="light">
+  
   <header>
     <div>
-      <h1>VBT iPhone — vitesse / puissance + estimation 1RM</h1>
-      <div class="muted">
-        Safari + HTTPS obligatoire. Après <b>Démarrer</b>, autorise “Mouvement & Orientation”.
-        Fin de rep = <b>proposition</b> (à valider/rejeter).
-      </div>
+      <h1>VBT iPhone Pro</h1>
+      <div class="muted">Mesure de vitesse de barre & estimation 1RM.</div>
     </div>
-    <div class="toggle" id="themeToggle" title="Basculer clair/sombre">☀️/🌙 Thème</div>
+    <div class="toggle" id="themeToggle">🌗 Thème</div>
   </header>
 
-  <div class="row" style="margin-top:12px;">
-    <!-- LIVE -->
+  <div class="row">
     <div class="card">
-      <div class="topline">
-        <div class="btnRow">
-          <button id="btnStart">Démarrer</button>
-          <button id="btnStop" class="secondary" disabled>Stop</button>
-          <span class="pill"><span id="statusDot" class="dot"></span><span id="statusText">En attente</span></span>
-          <span class="pill">Rep validées : <b id="repCount">0</b></span>
-        </div>
+      <div class="btnRow">
+        <button id="btnStart">Démarrer</button>
+        <button id="btnStop" class="secondary" disabled>Stop</button>
+        <span class="pill"><span id="statusDot" class="dot"></span><span id="statusText">En attente</span></span>
+        <span class="pill">Reps : <b id="repCount">0</b></span>
       </div>
 
-      <div style="margin-top:10px;" class="metricBig">
-        <div class="k">Vitesse PIC (bloquée sur la meilleure valeur)</div>
+      <div class="metricBig">
+        <div class="k">Vitesse Pic (Rep)</div>
         <div><span class="v" id="vHold">0.00</span><span class="u">m/s</span></div>
       </div>
 
-      <div class="grid3" style="margin-top:10px;">
+      <div class="grid3" style="margin-top:16px;">
         <div class="metricSmall">
-          <div class="k">Vitesse moyenne (rep)</div>
+          <div class="k">Vitesse Moy</div>
           <div class="v" id="vMeanLive">—</div>
         </div>
         <div class="metricSmall">
-          <div class="k">Accélération PIC (rep)</div>
+          <div class="k">Accel Pic</div>
           <div class="v" id="aPeakLive">—</div>
         </div>
         <div class="metricSmall">
@@ -154,33 +154,30 @@
         </div>
       </div>
 
-      <div id="proposalBox" class="proposal" style="margin-top:12px; display:none;">
-        <h2>Proposition (non enregistrée)</h2>
+      <div id="proposalBox" class="proposal" style="display:none;">
+        <h2>Nouvelle répétition détectée</h2>
+        <div id="proposalText" class="muted" style="margin-bottom:12px; font-size:14px;"></div>
         <div class="grid2">
-          <div class="muted" id="proposalText"></div>
-          <div class="btnRow" style="justify-content:flex-end;">
-            <button id="btnReject" class="secondary">Rejeter</button>
-            <button id="btnAccept">Valider</button>
-          </div>
+          <button id="btnReject" class="secondary" style="border-color:var(--bad); color:var(--bad);">Ignorer</button>
+          <button id="btnAccept">Valider & Enregistrer</button>
         </div>
       </div>
 
-      <div class="muted" style="margin-top:10px;">
-        ⚠️ Estimation via accéléromètre (sensibilité vibrations/fixation). Pour une vraie VBT bar velocity, un capteur dédié est préférable.
+      <div class="muted" style="margin-top:16px; font-size:11px; text-align:center;">
+        Nécessite Safari sur iOS + HTTPS. Fixez le téléphone solidement à la barre.
       </div>
     </div>
 
-    <!-- SETTINGS + RESULTS -->
     <div class="card">
       <div class="grid2">
         <div>
           <label for="exercise">Exercice</label>
           <select id="exercise">
-            <option value="bench">Bench press</option>
-            <option value="squat">Back squat</option>
-            <option value="row">Bent-over row</option>
+            <option value="bench">Bench Press</option>
+            <option value="squat">Back Squat</option>
             <option value="deadlift">Deadlift</option>
-            <option value="other">Autre</option>
+            <option value="row">Pendlay Row</option>
+            <option value="ohp">Overhead Press</option>
           </select>
         </div>
         <div>
@@ -189,88 +186,57 @@
         </div>
       </div>
 
-      <div class="grid2" style="margin-top:10px;">
-        <div>
-          <label for="axisMode">Signal</label>
-          <select id="axisMode">
-            <option value="mag" selected>Magnitude (robuste)</option>
-            <option value="x">Axe X</option>
-            <option value="y">Axe Y</option>
-            <option value="z">Axe Z</option>
-          </select>
-        </div>
-        <div>
-          <label for="mvt">MVT (m/s) pour 1RM (modifiable)</label>
-          <input type="number" id="mvt" value="0.17" step="0.01" min="0" />
-        </div>
-      </div>
-
-      <div class="grid2" style="margin-top:10px;">
-        <div class="metricSmall">
-          <div class="k">1RM estimée (profil charge–vitesse)</div>
+      <div class="grid2" style="margin-top:12px;">
+        <div class="metricSmall" style="background:var(--card);">
+          <div class="k">1RM Estimée</div>
           <div class="v" id="oneRm">—</div>
-          <div class="muted" id="oneRmHint" style="margin-top:4px;"></div>
+          <div class="k" id="oneRmHint" style="font-size:9px; margin-top:2px;"></div>
         </div>
-        <div class="metricSmall">
-          <div class="k">Puissance max (validée)</div>
+        <div class="metricSmall" style="background:var(--card);">
+          <div class="k">Puissance Max</div>
           <div class="v" id="pMax">—</div>
-          <div class="muted" id="pMaxHint" style="margin-top:4px;"></div>
+          <div class="k" id="pMaxHint" style="font-size:9px; margin-top:2px;"></div>
         </div>
       </div>
 
-      <div class="canvasWrap" style="margin-top:10px;">
-        <div class="muted" style="margin-bottom:6px;">Graphique (x=charge | y=gauche=vitesse | y=droite=puissance)</div>
-        <canvas id="chart" width="900" height="520"></canvas>
+      <div class="canvasWrap">
+        <canvas id="chart"></canvas>
       </div>
 
-      <details style="margin-top:10px;">
-        <summary>Réglages avancés + tableau + export</summary>
-
+      <details style="margin-top:16px;">
+        <summary>Historique & Options</summary>
+        
         <div class="grid2" style="margin-top:10px;">
-          <div>
-            <label for="startThr">Seuil début rep (m/s²)</label>
-            <input type="number" id="startThr" value="0.60" step="0.05" min="0" />
-          </div>
-          <div>
-            <label for="stopThr">Seuil fin rep (m/s²)</label>
-            <input type="number" id="stopThr" value="0.25" step="0.05" min="0" />
-          </div>
+           <div>
+             <label>Seuil Début (m/s²)</label>
+             <input type="number" id="startThr" value="0.60" step="0.1" />
+           </div>
+           <div>
+             <label>Seuil Fin (m/s²)</label>
+             <input type="number" id="stopThr" value="0.25" step="0.05" />
+           </div>
         </div>
-
-        <div class="grid2" style="margin-top:10px;">
-          <div>
-            <label for="stopHold">Temps bas pour finir (ms)</label>
-            <input type="number" id="stopHold" value="250" step="50" min="50" />
-          </div>
-          <div>
-            <label for="decayTau">Anti-dérive vitesse (s)</label>
-            <input type="number" id="decayTau" value="0.35" step="0.05" min="0.05" />
-          </div>
+        
+        <div class="grid3" style="margin-top:10px;">
+           <label style="grid-column: span 3; margin-bottom:0;">Réglages Avancés</label>
+           <input type="number" id="stopHold" value="250" placeholder="Hold ms" title="Temps maintien arrêt" />
+           <input type="number" id="decayTau" value="0.35" step="0.05" placeholder="Decay" title="Facteur lissage" />
+           <input type="number" id="mvt" value="0.17" step="0.01" placeholder="MVT" title="Vitesse à 1RM" />
         </div>
+        <div class="muted" style="font-size:10px; margin-top:4px;">Hold (ms) / Decay (s) / MVT (m/s)</div>
 
-        <div class="btnRow" style="margin-top:10px;">
-          <button id="btnExport" class="secondary">Exporter CSV</button>
-          <button id="btnUndo" class="secondary">Supprimer dernière</button>
-          <button id="btnReset" class="danger">Reset set</button>
-        </div>
-
-        <div class="muted" style="margin-top:8px;">
-          Conseil iPhone : partager → “Ajouter à l’écran d’accueil”.
+        <div class="btnRow" style="margin-top:16px;">
+          <button id="btnUndo" class="secondary" style="font-size:12px;">Annuler dernière</button>
+          <button id="btnExport" class="secondary" style="font-size:12px;">CSV</button>
+          <button id="btnReset" class="danger" style="font-size:12px;">Tout effacer</button>
         </div>
 
         <table>
           <thead>
-          <tr>
-            <th>#</th>
-            <th>Exo</th>
-            <th class="right">kg</th>
-            <th class="right">v̄ (m/s)</th>
-            <th class="right">v pic</th>
-            <th class="right">a pic</th>
-            <th class="right">P̄ (W)</th>
-            <th class="right">P pic</th>
-            <th class="right">dur (s)</th>
-          </tr>
+            <tr>
+              <th>#</th><th>Exo</th><th class="right">Kg</th>
+              <th class="right">V<sub>moy</sub></th><th class="right">V<sub>pic</sub></th><th class="right">Watt</th>
+            </tr>
           </thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -281,100 +247,19 @@
 
 <script>
 (() => {
-  // ---------- DOM helpers ----------
   const $ = (id) => document.getElementById(id);
 
-  const app = $("app");
-  const btnStart = $("btnStart");
-  const btnStop = $("btnStop");
-  const btnAccept = $("btnAccept");
-  const btnReject = $("btnReject");
-  const btnExport = $("btnExport");
-  const btnReset = $("btnReset");
-  const btnUndo = $("btnUndo");
-  const themeToggle = $("themeToggle");
-
-  const statusDot = $("statusDot");
-  const statusText = $("statusText");
-  const repCountEl = $("repCount");
-
-  const vHoldEl = $("vHold");
-  const vMeanLiveEl = $("vMeanLive");
-  const aPeakLiveEl = $("aPeakLive");
-  const repStateEl = $("repState");
-
-  const exerciseEl = $("exercise");
-  const loadKgEl = $("loadKg");
-  const axisModeEl = $("axisMode");
-  const mvtEl = $("mvt");
-
-  const startThrEl = $("startThr");
-  const stopThrEl = $("stopThr");
-  const stopHoldEl = $("stopHold");
-  const decayTauEl = $("decayTau");
-
-  const proposalBox = $("proposalBox");
-  const proposalText = $("proposalText");
-
-  const tbody = $("tbody");
-  const canvas = $("chart");
-  const ctx = canvas.getContext("2d");
-
-  const oneRmEl = $("oneRm");
-  const oneRmHintEl = $("oneRmHint");
-  const pMaxEl = $("pMax");
-  const pMaxHintEl = $("pMaxHint");
-
-  // ---------- Literature-based defaults (indicative) ----------
-  const EXO = {
-    bench:   { name: "Bench",   mvt: 0.17 },
-    squat:   { name: "Squat",   mvt: 0.37 },
-    row:     { name: "Row",     mvt: 0.40 },
-    deadlift:{ name: "Deadlift",mvt: 0.16 },
-    other:   { name: "Autre",   mvt: 0.20 }
-  };
-
-  // ---------- persistence ----------
-  const LS_KEY = "vbt_iphone_rows_v3";
-  const LS_THEME = "vbt_iphone_theme_v1";
-
-  function loadState(){
-    try{
-      const raw = localStorage.getItem(LS_KEY);
-      if(raw){
-        const parsed = JSON.parse(raw);
-        if(Array.isArray(parsed)) rows.push(...parsed);
-      }
-    }catch(e){ /* ignore */ }
-
-    const savedTheme = localStorage.getItem(LS_THEME);
-    if(savedTheme === "dark") app.setAttribute("data-theme", "dark");
-  }
-  function saveState(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(rows)); }catch(e){ /* ignore */ }
-  }
-
-  // ---------- UI ----------
-  function setStatus(kind, text){
-    statusDot.className = "dot" + (kind ? (" " + kind) : "");
-    statusText.textContent = text;
-  }
-  function fmt(n, d=2){
-    if(!isFinite(n)) return "—";
-    return Number(n).toFixed(d);
-  }
-
-  // ---------- Motion capture state ----------
+  // --- STATE ---
   let listening = false;
   let lastT = null;
-  let lastMotionTs = null;
+  let lastMotionTs = null; // Watchdog timestamp
 
-  // filters/signals
-  let gSlow = 9.81;
+  // Filters & Integrators
+  let gSlow = 9.81; 
   let aEMA = 0;
   let v = 0;
-
-  // rep detection
+  
+  // Rep logic
   let inRep = false;
   let belowSince = null;
   let repStartT = null;
@@ -382,555 +267,343 @@
   let repA = [];
   let vPeak = 0;
   let aPeak = 0;
+  
+  let pending = null; // Proposal waiting
+  const rows = [];    // Saved data
 
-  // proposal (not saved until accepted)
-  let pending = null;
+  // Defaults
+  const EXO_DEFAULTS = {
+    bench: { mvt: 0.17 }, squat: { mvt: 0.30 }, deadlift: { mvt: 0.15 }, 
+    row: { mvt: 0.35 }, ohp: { mvt: 0.20 }
+  };
 
-  // saved rows
-  const rows = []; // {id, exo, load, vMean, vPeak, aPeak, pMean, pPeak, dur}
+  // --- UI ELEMENTS ---
+  const ui = {
+    btnStart: $('btnStart'), btnStop: $('btnStop'),
+    btnAccept: $('btnAccept'), btnReject: $('btnReject'),
+    btnExport: $('btnExport'), btnUndo: $('btnUndo'), btnReset: $('btnReset'),
+    themeToggle: $('themeToggle'),
+    statusDot: $('statusDot'), statusText: $('statusText'),
+    repCount: $('repCount'), vHold: $('vHold'),
+    vMeanLive: $('vMeanLive'), aPeakLive: $('aPeakLive'), repState: $('repState'),
+    proposalBox: $('proposalBox'), proposalText: $('proposalText'),
+    tbody: $('tbody'), chart: $('chart'),
+    ex: $('exercise'), load: $('loadKg'), mvt: $('mvt'),
+    startThr: $('startThr'), stopThr: $('stopThr'), 
+    stopHold: $('stopHold'), decayTau: $('decayTau'),
+    oneRm: $('oneRm'), oneRmHint: $('oneRmHint'),
+    pMax: $('pMax'), pMaxHint: $('pMaxHint'),
+    app: $('app')
+  };
 
-  function clampDt(dt){
-    if(!isFinite(dt) || dt <= 0) return 0.016;
-    return Math.max(0.002, Math.min(0.08, dt));
-  }
-  function getParams(){
-    return {
-      START_THR: parseFloat(startThrEl.value) || 0.60,
-      STOP_THR:  parseFloat(stopThrEl.value)  || 0.25,
-      STOP_HOLD_MS: parseInt(stopHoldEl.value,10) || 250,
-      DECAY_TAU: Math.max(0.05, parseFloat(decayTauEl.value) || 0.35)
-    };
-  }
+  // --- PERSISTENCE ---
+  const LS_DATA = "vbt_data_v4";
+  const LS_THEME = "vbt_theme";
 
-  function readAccel(evt){
-    // Prefer acceleration (without gravity) if available
-    const a = evt.acceleration;
-    const ag = evt.accelerationIncludingGravity;
-
-    let ax=null, ay=null, az=null;
-    if(a && (a.x!==null || a.y!==null || a.z!==null)){
-      ax=a.x; ay=a.y; az=a.z;
-    } else if(ag && (ag.x!==null || ag.y!==null || ag.z!==null)){
-      ax=ag.x; ay=ag.y; az=ag.z;
-    } else {
-      return null;
-    }
-    if(ax===null || ay===null || az===null) return null;
-
-    const mode = axisModeEl.value;
-    let raw = 0;
-    if(mode==="mag") raw = Math.sqrt(ax*ax + ay*ay + az*az);
-    else if(mode==="x") raw = ax;
-    else if(mode==="y") raw = ay;
-    else raw = az;
-
-    return raw;
+  function save(){ try{ localStorage.setItem(LS_DATA, JSON.stringify(rows)); }catch(e){} }
+  function load(){
+    try{
+      const d = JSON.parse(localStorage.getItem(LS_DATA));
+      if(Array.isArray(d)) rows.push(...d);
+    }catch(e){}
+    const t = localStorage.getItem(LS_THEME);
+    if(t) ui.app.setAttribute('data-theme', t);
   }
 
+  // --- HELPERS ---
+  function fmt(n, d=2) { return isFinite(n) ? Number(n).toFixed(d) : "—"; }
+  function setStatus(k, t) { ui.statusDot.className = "dot "+k; ui.statusText.textContent = t; }
+
+  // --- MOTION PROCESSING ---
   function resetIntegrators(){
-    lastT = null;
-    gSlow = 9.81;
-    aEMA = 0;
-    v = 0;
-    inRep = false;
-    belowSince = null;
-    repStartT = null;
-    repV = [];
-    repA = [];
-    vPeak = 0;
-    aPeak = 0;
-    repStateEl.textContent = "—";
+    lastT = null; gSlow = 9.81; aEMA = 0; v = 0;
+    inRep = false; belowSince = null; repV = []; repA = [];
+    vPeak = 0; aPeak = 0;
+    ui.repState.textContent = "—";
   }
 
-  function showProposal(p){
-    pending = p;
-    proposalText.innerHTML =
-      `<b>${EXO[p.exo].name}</b> — <b>${fmt(p.load,1)} kg</b><br>` +
-      `v̄: <b>${fmt(p.vMean)}</b> m/s · v pic: <b>${fmt(p.vPeak)}</b> m/s · a pic: <b>${fmt(p.aPeak)}</b> m/s²<br>` +
-      `P̄: <b>${fmt(p.pMean,0)}</b> W · P pic: <b>${fmt(p.pPeak,0)}</b> W · durée: <b>${fmt(p.dur)}</b> s`;
-    proposalBox.style.display = "block";
-    vMeanLiveEl.textContent = fmt(p.vMean);
-    aPeakLiveEl.textContent = fmt(p.aPeak);
-  }
-  function clearProposal(){
-    pending = null;
-    proposalBox.style.display = "none";
-  }
-
-  function startRep(now){
-    inRep = true;
-    repStateEl.textContent = "EN REP";
-    repStartT = now;
-    belowSince = null;
-    repV = [];
-    repA = [];
-    v = 0; // reset speed per rep (reduces drift)
-    vPeak = 0;
-    aPeak = 0;
-    // when a new rep starts, hide old proposal (optional behavior)
-    clearProposal();
-    setStatus("warn", "Répétition…");
-  }
-
-  function endRep(now){
-    inRep = false;
-    repStateEl.textContent = "FIN (proposition)";
-    setStatus("ok", "En écoute");
-
-    const dur = (now - repStartT) / 1000;
-    if(repV.length < 6 || dur < 0.15){
-      resetIntegrators();
-      return;
-    }
-
-    const vMean = repV.reduce((s,x)=>s+x,0) / repV.length;
-    const vPk = Math.max(...repV);
-    const aPk = Math.max(...repA);
-
-    const load = parseFloat(loadKgEl.value) || 0;
-    const forceN = load * 9.81;          // approx vertical force
-    const pMean = forceN * vMean;        // W
-    const pPeak = forceN * vPk;
-
-    // "Hold" = lock on best value
-    vHoldEl.textContent = fmt(vPk);
-
-    showProposal({
-      id: crypto?.randomUUID ? crypto.randomUUID() : String(Date.now()),
-      exo: exerciseEl.value,
-      load,
-      vMean, vPeak: vPk, aPeak: aPk,
-      pMean, pPeak,
-      dur
-    });
-
-    // reset for next detection (keep listening)
-    repV = []; repA = [];
-    v = 0; aEMA = 0; belowSince = null;
-  }
-
-  function onMotion(evt){
+  function onMotion(e){
     lastMotionTs = performance.now();
-
     const now = performance.now();
-    if(lastT === null) lastT = now;
-    const dt = clampDt((now - lastT)/1000);
+    if(lastT===null) lastT = now;
+    const dt = Math.max(0.002, Math.min(0.08, (now - lastT)/1000));
     lastT = now;
 
-    const raw = readAccel(evt);
-    if(raw === null) return;
+    // Read Accel (Prefer no gravity)
+    const accObj = e.acceleration || e.accelerationIncludingGravity;
+    if(!accObj) return;
+    
+    // Simple magnitude (robust to orientation changes)
+    const {x,y,z} = accObj;
+    if(x==null) return;
+    const raw = Math.sqrt(x*x + y*y + z*z);
 
-    const p = getParams();
+    // High Pass Filter (Remove gravity drift)
+    gSlow = gSlow * 0.98 + raw * 0.02;
+    const aAbs = Math.abs(raw - gSlow);
 
-    // filters: slow baseline + fast smoothing
-    const ALPHA_SLOW = 0.02;
-    const ALPHA_FAST = 0.35;
+    // Smoothing
+    aEMA = aEMA * 0.65 + aAbs * 0.35;
 
-    gSlow = (1-ALPHA_SLOW)*gSlow + ALPHA_SLOW*raw;
-    const aHP = raw - gSlow;
-    const aAbs = Math.abs(aHP);
-
-    aEMA = (1-ALPHA_FAST)*aEMA + ALPHA_FAST*aAbs;
-
-    // integrate to a scalar "speed estimate" with decay (anti drift)
-    const decay = Math.exp(-dt / p.DECAY_TAU);
-    v = v*decay + aEMA*dt;
+    // Integration
+    const tau = parseFloat(ui.decayTau.value) || 0.35;
+    const decay = Math.exp(-dt / tau);
+    v = v * decay + aEMA * dt;
     if(v < 0) v = 0;
 
-    // during rep: update peak and "hold display" = peak
+    // --- REP LOGIC ---
+    const startThr = parseFloat(ui.startThr.value) || 0.6;
+    const stopThr = parseFloat(ui.stopThr.value) || 0.25;
+    const stopHold = parseInt(ui.stopHold.value) || 250;
+
     if(inRep){
-      repV.push(v);
-      repA.push(aEMA);
+      repV.push(v); repA.push(aEMA);
       if(v > vPeak) vPeak = v;
       if(aEMA > aPeak) aPeak = aEMA;
-      vHoldEl.textContent = fmt(vPeak); // lock on best
+      ui.vHold.textContent = fmt(vPeak);
 
-      // stop condition
-      if(aEMA < p.STOP_THR){
+      if(aEMA < stopThr){
         if(belowSince === null) belowSince = now;
-        if((now - belowSince) > p.STOP_HOLD_MS){
-          endRep(now);
-        }
+        if(now - belowSince > stopHold) endRep(now);
       } else {
         belowSince = null;
       }
     } else {
-      // start condition
-      if(aEMA > p.START_THR){
-        startRep(now);
-      }
+      if(aEMA > startThr) startRep(now);
     }
   }
 
-  async function requestPermissionIfNeeded(){
-    if(!window.isSecureContext){
-      throw new Error("Page non sécurisée (HTTPS requis)");
-    }
-    if(typeof DeviceMotionEvent !== "undefined" &&
-       typeof DeviceMotionEvent.requestPermission === "function"){
-      const resp = await DeviceMotionEvent.requestPermission();
-      if(resp !== "granted") throw new Error("Permission refusée");
-    }
+  function startRep(now){
+    inRep = true; repStartT = now; belowSince = null;
+    repV = []; repA = []; v = 0; vPeak = 0;
+    ui.repState.textContent = "EN COURS";
+    ui.proposalBox.style.display = "none";
+    setStatus("warn", "Mesure...");
   }
 
-  function startListening(){
-    if(listening) return;
-    resetIntegrators();
-    lastMotionTs = null;
-
-    window.addEventListener("devicemotion", onMotion, { passive:true });
-    listening = true;
-    btnStart.disabled = true;
-    btnStop.disabled = false;
+  function endRep(now){
+    inRep = false; ui.repState.textContent = "FINIE";
     setStatus("ok", "En écoute");
-    repStateEl.textContent = "—";
+    
+    const dur = (now - repStartT)/1000;
+    // Filter noise (too short reps)
+    if(dur < 0.2 || repV.length < 5) return;
 
-    // watchdog: detect "capteur inactif"
-    setTimeout(() => {
-      if(!listening) return;
-      if(lastMotionTs === null){
-        setStatus("bad", "Capteur inactif");
-        alert("Aucun signal capteur.\n\nVérifie : Safari (pas Chrome), HTTPS, et Réglages iOS > Safari > Accès Mouvement & Orientation (autorisé).");
-      }
-    }, 1200);
+    const vMean = repV.reduce((a,b)=>a+b,0)/repV.length;
+    const load = parseFloat(ui.load.value)||0;
+    // Power = Force(mg) * Velocity. Simplified.
+    const pMean = (load * 9.81) * vMean;
+    const pPeak = (load * 9.81) * vPeak;
+
+    pending = {
+      id: Date.now(),
+      exo: ui.ex.value,
+      load, vMean, vPeak, aPeak: Math.max(...repA),
+      pMean, pPeak, dur
+    };
+
+    ui.proposalText.innerHTML = `
+      <b>${pending.exo.toUpperCase()} @ ${pending.load}kg</b><br>
+      V.Moy: <b>${fmt(vMean)}</b> m/s &nbsp;|&nbsp; V.Pic: <b>${fmt(vPeak)}</b> m/s &nbsp;|&nbsp; P.Moy: <b>${fmt(pMean,0)}</b> W
+    `;
+    ui.proposalBox.style.display = "block";
+    ui.vMeanLive.textContent = fmt(vMean);
+    ui.aPeakLive.textContent = fmt(pending.aPeak);
   }
 
-  function stopListening(){
-    if(!listening) return;
-    window.removeEventListener("devicemotion", onMotion);
-    listening = false;
-    btnStart.disabled = false;
-    btnStop.disabled = true;
-    setStatus("", "En attente");
-    resetIntegrators();
-  }
-
-  // ---------- table + stats ----------
-  function renderTable(){
-    tbody.innerHTML = "";
-    rows.forEach((r, idx) => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${idx+1}</td>
-        <td>${EXO[r.exo]?.name ?? r.exo}</td>
-        <td class="right">${fmt(r.load,1)}</td>
+  // --- ANALYSIS & CHART ---
+  function updateAnalysis(){
+    const ex = ui.ex.value;
+    const data = rows.filter(r => r.exo === ex);
+    
+    // Table
+    ui.tbody.innerHTML = rows.map((r,i) => `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.exo}</td>
+        <td class="right">${r.load}</td>
         <td class="right">${fmt(r.vMean)}</td>
         <td class="right">${fmt(r.vPeak)}</td>
-        <td class="right">${fmt(r.aPeak)}</td>
         <td class="right">${fmt(r.pMean,0)}</td>
-        <td class="right">${fmt(r.pPeak,0)}</td>
-        <td class="right">${fmt(r.dur)}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-    repCountEl.textContent = String(rows.length);
-  }
+      </tr>
+    `).reverse().join(''); // Show newest first
+    ui.repCount.textContent = rows.length;
 
-  function exportCSV(){
-    if(!rows.length) return;
-    const header = ["n","exercise","load_kg","v_mean_ms","v_peak_ms","a_peak_ms2","p_mean_w","p_peak_w","duration_s"];
-    const lines = [header.join(",")];
-    rows.forEach((r,i)=>{
-      lines.push([
-        i+1,
-        EXO[r.exo]?.name ?? r.exo,
-        r.load.toFixed(2),
-        r.vMean.toFixed(4),
-        r.vPeak.toFixed(4),
-        r.aPeak.toFixed(4),
-        r.pMean.toFixed(2),
-        r.pPeak.toFixed(2),
-        r.dur.toFixed(4)
-      ].join(","));
-    });
-    const blob = new Blob([lines.join("\n")], {type:"text/csv;charset=utf-8"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `vbt_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-  }
-
-  function computeForSelectedExercise(){
-    const exo = exerciseEl.value;
-    const data = rows.filter(r => r.exo === exo);
-
-    // pMax
+    // Power Max
     if(data.length){
-      let best = data[0];
-      for(const r of data) if(r.pPeak > best.pPeak) best = r;
-      pMaxEl.textContent = `${fmt(best.pPeak,0)} W`;
-      pMaxHintEl.textContent = `à ${fmt(best.load,1)} kg`;
+      const best = data.reduce((p,c) => p.pMean > c.pMean ? p : c);
+      ui.pMax.textContent = fmt(best.pMean, 0) + " W";
+      ui.pMaxHint.textContent = `@ ${best.load}kg`;
     } else {
-      pMaxEl.textContent = "—";
-      pMaxHintEl.textContent = "";
+      ui.pMax.textContent = "—"; ui.pMaxHint.textContent = "";
     }
 
-    // 1RM estimate via linear regression (load vs vMean)
-    if(data.length < 2){
-      oneRmEl.textContent = "—";
-      oneRmHintEl.textContent = "Ajoute au moins 2 reps validées (charges différentes).";
-      return { data, fit:null };
+    // 1RM Calculation (Linear Regression)
+    if(data.length >= 2){
+      // Filter out weird data points where slope might break
+      const xs = data.map(d=>d.load);
+      const ys = data.map(d=>d.vMean);
+      
+      const n = xs.length;
+      const sx = xs.reduce((a,b)=>a+b,0);
+      const sy = ys.reduce((a,b)=>a+b,0);
+      const sxy = xs.reduce((a,c,i)=>a + c*ys[i],0);
+      const sxx = xs.reduce((a,b)=>a + b*b,0);
+      
+      const denominator = (n*sxx - sx*sx);
+      if(denominator !== 0){
+        const b = (n*sxy - sx*sy) / denominator; // Slope
+        const a = (sy - b*sx) / n; // Intercept
+        
+        // Safety: Velocity MUST decrease as load increases (slope b must be negative)
+        if(b < 0) {
+           const targetMVT = parseFloat(ui.mvt.value) || 0.2;
+           const est1rm = (targetMVT - a) / b;
+           if(est1rm > 0 && est1rm < 500) {
+             ui.oneRm.textContent = fmt(est1rm, 1) + " kg";
+             ui.oneRmHint.textContent = `MVT: ${targetMVT} m/s`;
+             drawChart(data, {a, b, est1rm, targetMVT});
+             return;
+           }
+        }
+      }
     }
-
-    // regression vMean = a + b*load (b should be negative)
-    const xs = data.map(d => d.load);
-    const ys = data.map(d => d.vMean);
-
-    const n = xs.length;
-    const meanX = xs.reduce((s,x)=>s+x,0)/n;
-    const meanY = ys.reduce((s,y)=>s+y,0)/n;
-
-    let num=0, den=0;
-    for(let i=0;i<n;i++){
-      num += (xs[i]-meanX)*(ys[i]-meanY);
-      den += (xs[i]-meanX)*(xs[i]-meanX);
-    }
-    if(den === 0){
-      oneRmEl.textContent = "—";
-      oneRmHintEl.textContent = "Charges identiques : impossible de faire une régression.";
-      return { data, fit:null };
-    }
-    const b = num/den;
-    const a = meanY - b*meanX;
-
-    const mvt = Math.max(0, parseFloat(mvtEl.value) || EXO[exo].mvt);
-    // solve mvt = a + b*load => load = (mvt - a)/b
-    let est = (mvt - a) / b;
-
-    if(!isFinite(est) || est < 0){
-      oneRmEl.textContent = "—";
-      oneRmHintEl.textContent = "Profil incohérent (pente/valeurs). Ajuste MVT ou refais des points.";
-      return { data, fit:{a,b,mvt,est:null} };
-    }
-
-    // cap a little if wildly beyond max load (still show)
-    oneRmEl.textContent = `${fmt(est,1)} kg`;
-    oneRmHintEl.textContent = `Basé sur v̄ et MVT=${fmt(mvt,2)} m/s (indicatif).`;
-
-    return { data, fit:{a,b,mvt,est} };
+    ui.oneRm.textContent = "—";
+    ui.oneRmHint.textContent = "Besoin de + de données";
+    drawChart(data, null);
   }
 
-  // ---------- chart (dual y axis) ----------
-  function clearCanvas(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-  }
-  function drawChart(){
-    clearCanvas();
-
-    const exo = exerciseEl.value;
-    const { data, fit } = computeForSelectedExercise();
-
-    // Basic frame
-    const W = canvas.width, H = canvas.height;
-    const padL = 70, padR = 70, padT = 20, padB = 55;
-    const plotW = W - padL - padR;
-    const plotH = H - padT - padB;
-
-    // axes ranges
-    const xVals = data.map(d=>d.load);
-    const vVals = data.map(d=>d.vMean);
-    const pVals = data.map(d=>d.pMean);
-
-    const xMin = data.length ? Math.min(...xVals) : 0;
-    const xMax = data.length ? Math.max(...xVals) : 100;
-
-    const vMax = data.length ? Math.max(1.0, ...vVals, (fit?.mvt ?? 0)) : 1.0;
-    const vMin = 0;
-
-    const pMax = data.length ? Math.max(100, ...pVals) : 100;
-    const pMin = 0;
-
-    const xToPx = (x) => padL + ( (x - xMin) / (xMax - xMin || 1) ) * plotW;
-    const vToPy = (v) => padT + (1 - ( (v - vMin) / (vMax - vMin || 1) )) * plotH;
-    const pToPy = (p) => padT + (1 - ( (p - pMin) / (pMax - pMin || 1) )) * plotH;
-
-    // grid + axes
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = getComputedStyle(app).getPropertyValue("--border").trim();
-    ctx.fillStyle = getComputedStyle(app).getPropertyValue("--muted").trim();
-    ctx.font = "12px system-ui";
-
-    // border
-    ctx.strokeRect(padL, padT, plotW, plotH);
-
-    // x ticks
-    const ticksX = 4;
-    for(let i=0;i<=ticksX;i++){
-      const t = xMin + (i/ticksX)*(xMax-xMin || 1);
-      const x = xToPx(t);
-      ctx.beginPath();
-      ctx.moveTo(x, padT+plotH);
-      ctx.lineTo(x, padT+plotH+6);
-      ctx.stroke();
-      ctx.fillText(String(Math.round(t)), x-8, padT+plotH+24);
-    }
-    // y left (velocity)
-    const ticksY = 4;
-    for(let i=0;i<=ticksY;i++){
-      const t = vMin + (i/ticksY)*(vMax-vMin);
-      const y = vToPy(t);
-      ctx.beginPath();
-      ctx.moveTo(padL-6, y);
-      ctx.lineTo(padL, y);
-      ctx.stroke();
-      ctx.fillText(t.toFixed(2), 10, y+4);
-    }
-    // y right (power)
-    for(let i=0;i<=ticksY;i++){
-      const t = pMin + (i/ticksY)*(pMax-pMin);
-      const y = pToPy(t);
-      ctx.beginPath();
-      ctx.moveTo(padL+plotW, y);
-      ctx.lineTo(padL+plotW+6, y);
-      ctx.stroke();
-      ctx.fillText(String(Math.round(t)), padL+plotW+14, y+4);
-    }
-
-    // axis labels
-    ctx.fillText("Charge (kg)", padL + plotW/2 - 30, H-16);
-    ctx.fillText("Vitesse v̄ (m/s)", 10, 16);
-    ctx.fillText("Puissance P̄ (W)", padL+plotW+8, 16);
-
-    // no data
-    if(!data.length){
-      ctx.fillText("Ajoute des reps validées pour voir le profil.", padL+20, padT+30);
+  function drawChart(data, fit){
+    const ctx = ui.chart.getContext('2d');
+    const w = ui.chart.width = ui.chart.clientWidth;
+    const h = ui.chart.height = ui.chart.clientHeight;
+    ctx.clearRect(0,0,w,h);
+    
+    if(!data.length) {
+      ctx.fillStyle = "#94a3b8"; ctx.font = "14px sans-serif";
+      ctx.fillText("Aucune donnée pour cet exercice", 20, 30);
       return;
     }
 
-    // points: velocity (left axis)
-    const accent = getComputedStyle(app).getPropertyValue("--accent").trim();
-    const accent2 = getComputedStyle(app).getPropertyValue("--accent2").trim();
+    // Ranges (Add padding so dots aren't on edges)
+    const xs = data.map(d=>d.load);
+    const ys = data.map(d=>d.vMean);
+    const minX = Math.min(...xs) - 5; 
+    const maxX = Math.max(...xs, fit?.est1rm || 0) + 5;
+    const minY = 0;
+    const maxY = Math.max(...ys, 1.2);
 
-    // velocity scatter
-    ctx.fillStyle = accent;
-    data.forEach(d=>{
-      const x = xToPx(d.load);
-      const y = vToPy(d.vMean);
-      ctx.beginPath();
-      ctx.arc(x,y,6,0,Math.PI*2);
-      ctx.fill();
-    });
+    const mapX = (x) => 40 + ((x-minX)/(maxX-minX)) * (w-50);
+    const mapY = (y) => (h-30) - ((y-minY)/(maxY-minY)) * (h-40);
 
-    // power scatter (right axis) - hollow circles
-    ctx.strokeStyle = accent2;
-    ctx.lineWidth = 2;
-    data.forEach(d=>{
-      const x = xToPx(d.load);
-      const y = pToPy(d.pMean);
-      ctx.beginPath();
-      ctx.arc(x,y,6,0,Math.PI*2);
-      ctx.stroke();
-    });
+    // Grid & Axes
+    ctx.strokeStyle = "#e2e8f0"; ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(40, h-30); ctx.lineTo(w-10, h-30); // X axis
+    ctx.moveTo(40, h-30); ctx.lineTo(40, 10);     // Y axis
+    ctx.stroke();
 
-    // regression line for velocity
-    if(fit && fit.est !== null){
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 2;
-      const x1 = xMin, x2 = Math.max(xMax, fit.est);
-      const y1 = fit.a + fit.b*x1;
-      const y2 = fit.a + fit.b*x2;
+    // Regression Line
+    if(fit){
+      ctx.strokeStyle = "#94a3b8"; ctx.setLineDash([5,5]);
       ctx.beginPath();
-      ctx.moveTo(xToPx(x1), vToPy(y1));
-      ctx.lineTo(xToPx(x2), vToPy(y2));
-      ctx.stroke();
-
-      // MVT horizontal
-      ctx.strokeStyle = getComputedStyle(app).getPropertyValue("--muted").trim();
-      ctx.setLineDash([6,6]);
-      ctx.beginPath();
-      ctx.moveTo(padL, vToPy(fit.mvt));
-      ctx.lineTo(padL+plotW, vToPy(fit.mvt));
+      // Point A (minX)
+      ctx.moveTo(mapX(minX), mapY(fit.a + fit.b*minX));
+      // Point B (1RM)
+      ctx.lineTo(mapX(fit.est1rm), mapY(fit.targetMVT));
       ctx.stroke();
       ctx.setLineDash([]);
-
-      // estimated 1RM marker
-      ctx.fillStyle = getComputedStyle(app).getPropertyValue("--text").trim();
-      const xEst = xToPx(fit.est);
-      const yMvt = vToPy(fit.mvt);
-      ctx.beginPath();
-      ctx.arc(xEst, yMvt, 6, 0, Math.PI*2);
-      ctx.fill();
-
-      ctx.fillStyle = getComputedStyle(app).getPropertyValue("--muted").trim();
-      ctx.fillText(`1RM≈${fit.est.toFixed(1)}kg`, Math.min(xEst+8, padL+plotW-70), Math.max(yMvt-10, padT+14));
+      
+      // 1RM Dot
+      ctx.fillStyle = "#f59e0b";
+      ctx.beginPath(); ctx.arc(mapX(fit.est1rm), mapY(fit.targetMVT), 5, 0, Math.PI*2); ctx.fill();
     }
+
+    // Data Points
+    ctx.fillStyle = "#3b82f6";
+    data.forEach(d => {
+      ctx.beginPath();
+      ctx.arc(mapX(d.load), mapY(d.vMean), 6, 0, Math.PI*2);
+      ctx.fill();
+    });
   }
 
-  // ---------- actions ----------
-  btnStart.addEventListener("click", async () => {
-    try{
-      setStatus("warn","Autorisation…");
-      await requestPermissionIfNeeded();
-      startListening();
-    }catch(e){
-      console.error(e);
-      setStatus("bad","Capteurs indisponibles");
-      alert("Impossible d'accéder aux capteurs.\n\n✅ Vérifie : Safari + HTTPS (GitHub Pages), et autorise “Mouvement & Orientation”.");
-    }
-  });
-  btnStop.addEventListener("click", stopListening);
+  // --- HANDLERS ---
+  async function startListening(){
+    try {
+      if(DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function'){
+        await DeviceMotionEvent.requestPermission();
+      }
+      listening = true;
+      resetIntegrators();
+      window.addEventListener('devicemotion', onMotion, {passive:true});
+      ui.btnStart.disabled = true; ui.btnStop.disabled = false;
+      setStatus("ok", "Capteurs actifs");
 
-  btnAccept.addEventListener("click", () => {
-    if(!pending) return;
-    rows.push(pending);
-    saveState();
-    renderTable();
-    drawChart();
-    clearProposal();
-    repStateEl.textContent = "—";
-  });
-  btnReject.addEventListener("click", () => {
-    clearProposal();
-    repStateEl.textContent = "—";
-  });
+      // Watchdog: check if sensors actually work
+      setTimeout(() => {
+        if(listening && !lastMotionTs) alert("Attention : Aucun signal reçu.\nVérifiez que vous êtes en HTTPS et non en mode Navigation Privée.");
+      }, 2000);
 
-  btnExport.addEventListener("click", exportCSV);
-  btnUndo.addEventListener("click", () => {
-    rows.pop();
-    saveState();
-    renderTable();
-    drawChart();
-  });
-  btnReset.addEventListener("click", () => {
-    if(!confirm("Reset : supprimer toutes les reps enregistrées ?")) return;
-    rows.length = 0;
-    saveState();
-    renderTable();
-    drawChart();
-    clearProposal();
-    vHoldEl.textContent = "0.00";
-    vMeanLiveEl.textContent = "—";
-    aPeakLiveEl.textContent = "—";
-  });
+    } catch(e) { alert("Erreur capteurs: "+e); }
+  }
 
-  // exercise changes => update default MVT
-  exerciseEl.addEventListener("change", () => {
-    const exo = exerciseEl.value;
-    mvtEl.value = String(EXO[exo]?.mvt ?? 0.20);
-    drawChart();
-  });
-  mvtEl.addEventListener("input", drawChart);
+  function stopListening(){
+    listening = false;
+    window.removeEventListener('devicemotion', onMotion);
+    ui.btnStart.disabled = false; ui.btnStop.disabled = true;
+    setStatus("", "Arrêté");
+  }
 
-  // theme toggle
-  themeToggle.addEventListener("click", () => {
-    const cur = app.getAttribute("data-theme") || "light";
-    const next = cur === "light" ? "dark" : "light";
-    app.setAttribute("data-theme", next);
-    try{ localStorage.setItem(LS_THEME, next); }catch(e){}
-    drawChart();
-  });
+  ui.btnStart.onclick = startListening;
+  ui.btnStop.onclick = stopListening;
+  
+  ui.btnAccept.onclick = () => {
+    if(pending) rows.push(pending);
+    ui.proposalBox.style.display = "none";
+    ui.repState.textContent = "ENREGISTRÉ";
+    save(); updateAnalysis();
+  };
+  
+  ui.btnReject.onclick = () => {
+    ui.proposalBox.style.display = "none";
+    ui.repState.textContent = "IGNORÉ";
+  };
 
-  // init
-  loadState();
-  renderTable();
-  setStatus("", "En attente");
-  // ensure mvt matches selected exercise on load
-  mvtEl.value = String(EXO[exerciseEl.value]?.mvt ?? 0.20);
-  drawChart();
+  ui.btnReset.onclick = () => {
+    if(confirm("Tout effacer ?")) { rows.length=0; save(); updateAnalysis(); }
+  };
+  ui.btnUndo.onclick = () => {
+    rows.pop(); save(); updateAnalysis();
+  };
+
+  ui.btnExport.onclick = () => {
+    const csv = "Exo,Kg,Vmean,Vpeak,Watt\n" + rows.map(r=>`${r.exo},${r.load},${fmt(r.vMean)},${fmt(r.vPeak)},${fmt(r.pMean,0)}`).join("\n");
+    const blob = new Blob([csv], {type:'text/csv'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download='vbt_export.csv';
+    a.click();
+  };
+
+  ui.themeToggle.onclick = () => {
+    const next = ui.app.getAttribute('data-theme')==='dark'?'light':'dark';
+    ui.app.setAttribute('data-theme', next);
+    localStorage.setItem(LS_THEME, next);
+  };
+
+  ui.ex.onchange = () => {
+    // Update default MVT for exercise
+    if(EXO_DEFAULTS[ui.ex.value]) ui.mvt.value = EXO_DEFAULTS[ui.ex.value].mvt;
+    updateAnalysis();
+  };
+  
+  [ui.load, ui.mvt].forEach(e => e.oninput = updateAnalysis);
+
+  // Init
+  load();
+  if(EXO_DEFAULTS[ui.ex.value]) ui.mvt.value = EXO_DEFAULTS[ui.ex.value].mvt;
+  updateAnalysis();
+  
 })();
 </script>
 </body>

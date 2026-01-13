@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>VBT iPhone — Pro</title>
+  <title>VBT iPhone — Timer</title>
   <style>
     :root{
       --bg:#f8f9fc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
@@ -18,7 +18,7 @@
       --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
     }
     body{ margin:0; background:var(--bg); color:var(--text); transition: background 0.3s, color 0.3s; }
-    .wrap{ max-width:1000px; margin:0 auto; padding:16px; padding-bottom:40px; }
+    .wrap{ max-width:1000px; margin:0 auto; padding:16px; padding-bottom:40px; position: relative; }
     
     /* Header */
     header{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:16px; }
@@ -111,31 +111,62 @@
     }
 
     details summary { padding: 10px 0; font-weight: 600; cursor: pointer; }
+
+    /* COUNTDOWN OVERLAY */
+    #countdownOverlay {
+      position: fixed; top:0; left:0; width:100%; height:100%;
+      background: rgba(15, 23, 42, 0.95);
+      z-index: 9999; display: none;
+      align-items: center; justify-content: center; flex-direction: column;
+    }
+    #cntVal { font-size: 120px; font-weight: 900; color: white; }
+    #cntLabel { color: #94a3b8; font-size: 18px; text-transform: uppercase; letter-spacing: 2px; }
+
   </style>
 </head>
 
 <body>
+
+<div id="countdownOverlay">
+  <div id="cntLabel">Démarrage dans</div>
+  <div id="cntVal">3</div>
+</div>
+
 <div class="wrap" id="app" data-theme="light">
   
   <header>
     <div>
       <h1>VBT iPhone Pro</h1>
-      <div class="muted">Mesure de vitesse de barre & estimation 1RM.</div>
+      <div class="muted">Vitesse de barre & Estimation 1RM.</div>
     </div>
     <div class="toggle" id="themeToggle">🌗 Thème</div>
   </header>
 
   <div class="row">
     <div class="card">
-      <div class="btnRow">
-        <button id="btnStart">Démarrer</button>
-        <button id="btnStop" class="secondary" disabled>Stop</button>
-        <span class="pill"><span id="statusDot" class="dot"></span><span id="statusText">En attente</span></span>
+      
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <div style="flex:1;">
+          <button id="btnStart" style="width:100%;">Démarrer</button>
+        </div>
+        <div style="width:80px;">
+          <select id="startDelay" style="text-align:center; padding:12px 4px;">
+            <option value="0">Direct</option>
+            <option value="3" selected>3s</option>
+            <option value="5">5s</option>
+            <option value="10">10s</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btnRow" style="justify-content:space-between; margin-bottom:10px;">
+        <button id="btnStop" class="secondary" disabled style="padding:8px 12px; font-size:12px;">Stop</button>
+        <span class="pill"><span id="statusDot" class="dot"></span><span id="statusText">Prêt</span></span>
         <span class="pill">Reps : <b id="repCount">0</b></span>
       </div>
 
       <div class="metricBig">
-        <div class="k">Vitesse Pic (Rep)</div>
+        <div class="k">Vitesse Pic (Max Retenu)</div>
         <div><span class="v" id="vHold">0.00</span><span class="u">m/s</span></div>
       </div>
 
@@ -155,16 +186,12 @@
       </div>
 
       <div id="proposalBox" class="proposal" style="display:none;">
-        <h2>Nouvelle répétition détectée</h2>
+        <h2>Répétition terminée</h2>
         <div id="proposalText" class="muted" style="margin-bottom:12px; font-size:14px;"></div>
         <div class="grid2">
           <button id="btnReject" class="secondary" style="border-color:var(--bad); color:var(--bad);">Ignorer</button>
-          <button id="btnAccept">Valider & Enregistrer</button>
+          <button id="btnAccept">Valider</button>
         </div>
-      </div>
-
-      <div class="muted" style="margin-top:16px; font-size:11px; text-align:center;">
-        Nécessite Safari sur iOS + HTTPS. Fixez le téléphone solidement à la barre.
       </div>
     </div>
 
@@ -235,7 +262,7 @@
           <thead>
             <tr>
               <th>#</th><th>Exo</th><th class="right">Kg</th>
-              <th class="right">V<sub>moy</sub></th><th class="right">V<sub>pic</sub></th><th class="right">Watt</th>
+              <th class="right">V<sub>pic</sub></th><th class="right">Watt</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
@@ -252,7 +279,7 @@
   // --- STATE ---
   let listening = false;
   let lastT = null;
-  let lastMotionTs = null; // Watchdog timestamp
+  let lastMotionTs = null;
 
   // Filters & Integrators
   let gSlow = 9.81; 
@@ -265,7 +292,7 @@
   let repStartT = null;
   let repV = [];
   let repA = [];
-  let vPeak = 0;
+  let vPeak = 0; // "Valeur la plus élevée retenue"
   let aPeak = 0;
   
   let pending = null; // Proposal waiting
@@ -279,7 +306,8 @@
 
   // --- UI ELEMENTS ---
   const ui = {
-    btnStart: $('btnStart'), btnStop: $('btnStop'),
+    btnStart: $('btnStart'), btnStop: $('btnStop'), startDelay: $('startDelay'),
+    cntOverlay: $('countdownOverlay'), cntVal: $('cntVal'),
     btnAccept: $('btnAccept'), btnReject: $('btnReject'),
     btnExport: $('btnExport'), btnUndo: $('btnUndo'), btnReset: $('btnReset'),
     themeToggle: $('themeToggle'),
@@ -297,8 +325,8 @@
   };
 
   // --- PERSISTENCE ---
-  const LS_DATA = "vbt_data_v4";
-  const LS_THEME = "vbt_theme";
+  const LS_DATA = "vbt_data_v5_pro";
+  const LS_THEME = "vbt_theme_v5";
 
   function save(){ try{ localStorage.setItem(LS_DATA, JSON.stringify(rows)); }catch(e){} }
   function load(){
@@ -314,12 +342,55 @@
   function fmt(n, d=2) { return isFinite(n) ? Number(n).toFixed(d) : "—"; }
   function setStatus(k, t) { ui.statusDot.className = "dot "+k; ui.statusText.textContent = t; }
 
+  // --- COUNTDOWN LOGIC ---
+  function initiateStart() {
+    const delay = parseInt(ui.startDelay.value) || 0;
+    
+    // Permission request must happen on First Click immediately
+    if(typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+      DeviceMotionEvent.requestPermission().then(permissionState => {
+        if (permissionState === 'granted') {
+          runCountdown(delay);
+        } else {
+          alert("Permission refusée.");
+        }
+      }).catch(console.error);
+    } else {
+      // Android / Non-iOS
+      runCountdown(delay);
+    }
+  }
+
+  function runCountdown(seconds) {
+    if(seconds <= 0) {
+      startListening();
+      return;
+    }
+
+    ui.cntOverlay.style.display = 'flex';
+    ui.cntVal.textContent = seconds;
+    
+    let left = seconds;
+    const timer = setInterval(() => {
+      left--;
+      if(left > 0) {
+        ui.cntVal.textContent = left;
+      } else {
+        clearInterval(timer);
+        ui.cntOverlay.style.display = 'none';
+        startListening();
+      }
+    }, 1000);
+  }
+
   // --- MOTION PROCESSING ---
   function resetIntegrators(){
     lastT = null; gSlow = 9.81; aEMA = 0; v = 0;
     inRep = false; belowSince = null; repV = []; repA = [];
     vPeak = 0; aPeak = 0;
     ui.repState.textContent = "—";
+    // On ne reset PAS vHold ici pour qu'il reste affiché entre les reps si besoin,
+    // mais on le reset au début d'une nouvelle rep.
   }
 
   function onMotion(e){
@@ -358,10 +429,15 @@
 
     if(inRep){
       repV.push(v); repA.push(aEMA);
-      if(v > vPeak) vPeak = v;
+      
+      // LOGIQUE PEAK HOLD : On met à jour si la valeur actuelle est plus grande
+      if(v > vPeak) {
+        vPeak = v;
+        ui.vHold.textContent = fmt(vPeak); // Affichage immédiat du max
+      }
       if(aEMA > aPeak) aPeak = aEMA;
-      ui.vHold.textContent = fmt(vPeak);
 
+      // Stop detection
       if(aEMA < stopThr){
         if(belowSince === null) belowSince = now;
         if(now - belowSince > stopHold) endRep(now);
@@ -369,20 +445,26 @@
         belowSince = null;
       }
     } else {
+      // Start detection
       if(aEMA > startThr) startRep(now);
     }
+    
+    // Feedback visuel (Live)
+    // ui.vMeanLive.textContent = fmt(v); // Optionnel : montrer la vitesse instantanée aussi
   }
 
   function startRep(now){
     inRep = true; repStartT = now; belowSince = null;
-    repV = []; repA = []; v = 0; vPeak = 0;
-    ui.repState.textContent = "EN COURS";
+    repV = []; repA = []; v = 0; 
+    vPeak = 0; // Reset du pic pour la nouvelle rep
+    ui.vHold.textContent = "0.00"; // Reset visuel
+    ui.repState.textContent = "EFFORT";
     ui.proposalBox.style.display = "none";
-    setStatus("warn", "Mesure...");
+    setStatus("warn", "Mesure en cours...");
   }
 
   function endRep(now){
-    inRep = false; ui.repState.textContent = "FINIE";
+    inRep = false; ui.repState.textContent = "TERMINÉ";
     setStatus("ok", "En écoute");
     
     const dur = (now - repStartT)/1000;
@@ -391,7 +473,9 @@
 
     const vMean = repV.reduce((a,b)=>a+b,0)/repV.length;
     const load = parseFloat(ui.load.value)||0;
-    // Power = Force(mg) * Velocity. Simplified.
+    
+    // PHYSICS: P = Force * Velocity
+    // F = m*g (approx vertical)
     const pMean = (load * 9.81) * vMean;
     const pPeak = (load * 9.81) * vPeak;
 
@@ -404,7 +488,7 @@
 
     ui.proposalText.innerHTML = `
       <b>${pending.exo.toUpperCase()} @ ${pending.load}kg</b><br>
-      V.Moy: <b>${fmt(vMean)}</b> m/s &nbsp;|&nbsp; V.Pic: <b>${fmt(vPeak)}</b> m/s &nbsp;|&nbsp; P.Moy: <b>${fmt(pMean,0)}</b> W
+      V.Pic: <b>${fmt(vPeak)}</b> m/s &nbsp;|&nbsp; P.Moy: <b>${fmt(pMean,0)}</b> W
     `;
     ui.proposalBox.style.display = "block";
     ui.vMeanLive.textContent = fmt(vMean);
@@ -422,8 +506,7 @@
         <td>${i+1}</td>
         <td>${r.exo}</td>
         <td class="right">${r.load}</td>
-        <td class="right">${fmt(r.vMean)}</td>
-        <td class="right">${fmt(r.vPeak)}</td>
+        <td class="right"><strong>${fmt(r.vPeak)}</strong></td>
         <td class="right">${fmt(r.pMean,0)}</td>
       </tr>
     `).reverse().join(''); // Show newest first
@@ -438,11 +521,11 @@
       ui.pMax.textContent = "—"; ui.pMaxHint.textContent = "";
     }
 
-    // 1RM Calculation (Linear Regression)
+    // 1RM Calculation (Linear Regression on vMean or vPeak?)
+    // Usually vMean is better for 1RM, but user focuses on vPeak. Let's stick to vMean for robustness.
     if(data.length >= 2){
-      // Filter out weird data points where slope might break
       const xs = data.map(d=>d.load);
-      const ys = data.map(d=>d.vMean);
+      const ys = data.map(d=>d.vMean); // Using mean velocity for regression is standard
       
       const n = xs.length;
       const sx = xs.reduce((a,b)=>a+b,0);
@@ -485,9 +568,9 @@
       return;
     }
 
-    // Ranges (Add padding so dots aren't on edges)
+    // Ranges (Add padding)
     const xs = data.map(d=>d.load);
-    const ys = data.map(d=>d.vMean);
+    const ys = data.map(d=>d.vMean); // Plotting mean velocity
     const minX = Math.min(...xs) - 5; 
     const maxX = Math.max(...xs, fit?.est1rm || 0) + 5;
     const minY = 0;
@@ -507,9 +590,7 @@
     if(fit){
       ctx.strokeStyle = "#94a3b8"; ctx.setLineDash([5,5]);
       ctx.beginPath();
-      // Point A (minX)
       ctx.moveTo(mapX(minX), mapY(fit.a + fit.b*minX));
-      // Point B (1RM)
       ctx.lineTo(mapX(fit.est1rm), mapY(fit.targetMVT));
       ctx.stroke();
       ctx.setLineDash([]);
@@ -529,33 +610,27 @@
   }
 
   // --- HANDLERS ---
-  async function startListening(){
-    try {
-      if(DeviceMotionEvent && typeof DeviceMotionEvent.requestPermission === 'function'){
-        await DeviceMotionEvent.requestPermission();
-      }
-      listening = true;
-      resetIntegrators();
-      window.addEventListener('devicemotion', onMotion, {passive:true});
-      ui.btnStart.disabled = true; ui.btnStop.disabled = false;
-      setStatus("ok", "Capteurs actifs");
+  function startListening(){
+    listening = true;
+    resetIntegrators();
+    window.addEventListener('devicemotion', onMotion, {passive:true});
+    ui.btnStart.disabled = true; ui.startDelay.disabled = true; ui.btnStop.disabled = false;
+    setStatus("ok", "Capteurs actifs");
 
-      // Watchdog: check if sensors actually work
-      setTimeout(() => {
-        if(listening && !lastMotionTs) alert("Attention : Aucun signal reçu.\nVérifiez que vous êtes en HTTPS et non en mode Navigation Privée.");
-      }, 2000);
-
-    } catch(e) { alert("Erreur capteurs: "+e); }
+    // Watchdog
+    setTimeout(() => {
+      if(listening && !lastMotionTs) alert("Attention : Aucun signal reçu.\nVérifiez HTTPS et Permissions.");
+    }, 2500);
   }
 
   function stopListening(){
     listening = false;
     window.removeEventListener('devicemotion', onMotion);
-    ui.btnStart.disabled = false; ui.btnStop.disabled = true;
+    ui.btnStart.disabled = false; ui.startDelay.disabled = false; ui.btnStop.disabled = true;
     setStatus("", "Arrêté");
   }
 
-  ui.btnStart.onclick = startListening;
+  ui.btnStart.onclick = initiateStart;
   ui.btnStop.onclick = stopListening;
   
   ui.btnAccept.onclick = () => {
@@ -592,7 +667,6 @@
   };
 
   ui.ex.onchange = () => {
-    // Update default MVT for exercise
     if(EXO_DEFAULTS[ui.ex.value]) ui.mvt.value = EXO_DEFAULTS[ui.ex.value].mvt;
     updateAnalysis();
   };

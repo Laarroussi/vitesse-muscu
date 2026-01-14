@@ -3,527 +3,1150 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>VBT Pro — Audio & Stats</title>
+  <title>VBT Scientist — iPhone</title>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
   <style>
     :root{
-      --bg:#f8f9fc; --card:#ffffff; --text:#0f172a; --muted:#64748b;
-      --border:#e2e8f0; --accent:#3b82f6; --power:#f59e0b; --ok:#22c55e; --bad:#ef4444;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --bg:#f6f7fb; --card:#ffffff; --text:#0b1020; --muted:#556070;
+      --border:#e6e8f0; --primary:#1e6bff; --danger:#c0392b; --ok:#2ecc71; --warn:#f1c40f;
+      --shadow: 0 10px 24px rgba(15,20,30,.08);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
     }
     [data-theme="dark"]{
-      --bg:#0f172a; --card:#1e293b; --text:#f1f5f9; --muted:#94a3b8;
-      --border:#334155; --accent:#60a5fa;
+      --bg:#0b0d10; --card:#121722; --text:#e9eef5; --muted:#aab4c3;
+      --border:#243048; --shadow: 0 10px 24px rgba(0,0,0,.28);
     }
-    body{ margin:0; background:var(--bg); color:var(--text); -webkit-user-select:none; user-select:none; padding-bottom:100px; }
-    .wrap{ max-width:700px; margin:0 auto; padding:16px; }
-    
-    header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
-    h1{ margin:0; font-size:18px; font-weight:800; }
-    .toggle{ font-size:20px; cursor:pointer; }
-
-    .card{ background:var(--card); border:1px solid var(--border); border-radius:24px; padding:20px; margin-bottom:16px; box-shadow:0 4px 12px rgba(0,0,0,0.05); }
-
-    .big-metric{ text-align:center; padding:15px 0; }
-    .label{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
-    .val{ font-size:64px; font-weight:900; line-height:1; font-variant-numeric: tabular-nums; letter-spacing:-2px; }
-    .unit{ font-size:18px; color:var(--muted); font-weight:500; }
-
+    body{ margin:0; background:var(--bg); color:var(--text); }
+    .wrap{ max-width: 980px; margin:0 auto; padding:14px; padding-bottom: 24px; }
+    h1{ font-size: 18px; margin:0 0 8px; font-weight:950; letter-spacing:-.02em; }
+    h2{ font-size: 14px; margin:0 0 10px; opacity:.9; }
+    .muted{ color:var(--muted); font-size: 12.5px; line-height:1.35; }
+    .card{
+      background:var(--card); border:1px solid var(--border); border-radius:16px;
+      padding:12px; box-shadow: var(--shadow); margin-top:12px;
+    }
+    .topbar{
+      display:grid; gap:10px; grid-template-columns: 1fr;
+      position: sticky; top: 0; z-index: 5;
+      background: linear-gradient(to bottom, var(--bg), rgba(0,0,0,0));
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: 8px;
+    }
+    .grid2{ display:grid; gap:10px; grid-template-columns: 1fr 1fr; }
+    label{ display:block; font-size:12px; color:var(--muted); margin: 0 0 6px; }
+    input, select{
+      width:100%; box-sizing:border-box; border-radius:12px;
+      padding:10px 10px; font-size:14px;
+      background: transparent; color: var(--text);
+      border:1px solid var(--border); outline:none;
+    }
+    input:focus, select:focus{ border-color: var(--primary); }
+    .btnRow{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     button{
-      flex:1; border:none; padding:16px; border-radius:16px;
-      font-size:16px; font-weight:700; cursor:pointer; transition: transform 0.1s;
-      display:flex; align-items:center; justify-content:center; gap:8px;
+      border:0; border-radius:12px; padding:10px 12px;
+      font-weight:900; font-size:14px; cursor:pointer;
+      color:white; background: var(--primary);
     }
-    button:active{ transform:scale(0.97); }
-    .btn-start{ background:var(--accent); color:white; width:100%; }
-    .btn-valid{ background:var(--ok); color:white; }
-    .btn-reject{ background:var(--card); border:2px solid var(--bad); color:var(--bad); }
-
-    select, input{
-      background:var(--card); color:var(--text); border:1px solid var(--border);
-      padding:10px; border-radius:12px; width:100%; font-size:16px; box-sizing:border-box;
+    button.secondary{ background: #2a3447; }
+    [data-theme="dark"] button.secondary{ background:#253047; }
+    button.danger{ background: var(--danger); }
+    button:disabled{ opacity:.55; cursor:not-allowed; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px; border-radius:999px;
+      border:1px solid var(--border); color: var(--muted); font-size:12px;
+      background: rgba(255,255,255,.55);
     }
+    [data-theme="dark"] .pill{ background: rgba(0,0,0,.25); }
+    .dot{ width:10px; height:10px; border-radius:50%; background:#9aa7bd; }
+    .dot.ok{ background: var(--ok); } .dot.warn{ background: var(--warn);} .dot.bad{ background:#e74c3c; }
 
-    #validationOverlay {
-      position:fixed; bottom:0; left:0; width:100%;
-      background:var(--card); border-top:1px solid var(--border);
-      padding:20px; box-sizing:border-box; z-index:100;
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
-      transform: translateY(110%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    .metricBig{
+      border:1px solid var(--border); border-radius:16px; padding:12px;
+      display:flex; justify-content:space-between; align-items:end; gap:10px;
     }
-    #validationOverlay.visible { transform: translateY(0); }
+    .metricBig .label{ font-size:12px; color:var(--muted); }
+    .metricBig .value{ font-size:44px; font-weight:1000; letter-spacing:-.02em; line-height:1; }
+    .metricBig .unit{ font-size:14px; color:var(--muted); margin-left:6px; }
 
-    #cntOverlay {
-      position:fixed; top:0; left:0; width:100%; height:100%;
-      background:rgba(15,23,42,0.98); z-index:200;
-      display:none; align-items:center; justify-content:center; flex-direction:column;
+    .miniRow{ display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr; margin-top:10px; }
+    .mini{
+      border:1px solid var(--border); border-radius:14px; padding:10px;
     }
-    #cntVal { font-size:140px; font-weight:900; color:white; }
-    #cntTxt { color:#94a3b8; font-size:18px; text-transform:uppercase; letter-spacing:2px; }
+    .mini .l{ font-size:11.5px; color:var(--muted); }
+    .mini .v{ font-size:18px; font-weight:950; }
 
-    table { width:100%; border-collapse:collapse; font-size:12px; margin-top:10px; }
-    th { text-align:left; color:var(--muted); padding:6px; border-bottom:1px solid var(--border); }
-    td { padding:8px 6px; border-bottom:1px solid var(--border); }
-    .num { text-align:right; font-weight:600; font-variant-numeric: tabular-nums; }
-    
-    .chart-box { position:relative; width:100%; height:280px; margin-top:10px; }
-    canvas { width:100%; height:100%; display:block; }
+    details summary{ cursor:pointer; font-weight:950; }
+    details > div{ margin-top:10px; }
 
-    .status-pill { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; background:var(--border); color:var(--muted); }
-    .status-pill.active { background:#dbeafe; color:#2563eb; }
-    .status-pill.locked { background:#dcfce7; color:#16a34a; }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; font-size:12.5px; }
+    th, td{ border-bottom:1px solid var(--border); padding:9px 6px; text-align:left; }
+    th{ color:var(--muted); font-weight:950; }
+    .right{ text-align:right; }
 
-    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    .controls-row { display:flex; gap:10px; margin-top:15px; }
+    .hint{ font-size:12px; color: var(--muted); }
+    .warnBox{
+      border:1px dashed var(--border); border-radius:14px; padding:10px; margin-top:10px;
+      color:var(--muted); font-size:12px;
+    }
+    .rowActions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    canvas{ width:100% !important; height:260px !important; }
   </style>
 </head>
+
 <body>
+  <div class="wrap" id="app" data-theme="light">
+    <div class="topbar">
+      <h1>VBT Scientist — iPhone</h1>
 
-  <div id="cntOverlay">
-    <div id="cntTxt">Départ dans</div>
-    <div id="cntVal">3</div>
-  </div>
+      <div class="card" style="margin-top:0;">
+        <div class="grid2">
+          <div>
+            <label for="exercise">Exercice</label>
+            <select id="exercise">
+              <option value="bench">Développé couché</option>
+              <option value="squat">Back squat</option>
+              <option value="deadlift">Soulevé de terre</option>
+              <option value="custom">Autre</option>
+            </select>
+          </div>
+          <div>
+            <label for="load">Charge totale (kg)</label>
+            <input id="load" type="number" value="20" step="2.5" min="0" />
+          </div>
+        </div>
 
-  <div id="validationOverlay">
-    <div style="text-align:center; margin-bottom:20px;">
-      <div class="label">Résultat</div>
-      <div style="font-size:40px; font-weight:800;" id="modalVal">0.00</div>
-      <div style="font-size:14px; color:var(--muted);">
-        Puis: <b id="modalPower">0 W</b> • Acc: <b id="modalAcc">0g</b>
+        <div class="grid2" style="margin-top:10px;">
+          <div>
+            <label for="mvt">Seuil vitesse 1RM (m/s) — mets 0.00 pour V=0</label>
+            <input id="mvt" type="number" value="0.17" step="0.01" min="0" />
+          </div>
+          <div>
+            <label for="method">Méthode 1RM</label>
+            <select id="method">
+              <option value="mvt" selected>Régression + Seuil (MVT ou 0)</option>
+              <option value="ch0">CH0 → 1RM (couché)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="start">Démarrer</button>
+          <button id="stop" class="secondary" disabled>Stop</button>
+
+          <span class="pill"><span id="sensorDot" class="dot"></span><span id="sensorText">En attente</span></span>
+
+          <!-- Compte à rebours (restitué) -->
+          <span class="pill" id="countdownPill" style="display:none;">
+            Départ : <b id="countdownText">3</b>s
+          </span>
+
+          <button id="theme" class="secondary" style="margin-left:auto;">Thème</button>
+        </div>
+
+        <div class="warnBox">
+          iPhone : Safari + HTTPS. Si le point reste rouge : autorise “Mouvement & Orientation”, puis recharge.
+          Le compte à rebours sert à stabiliser le capteur avant la 1ère rep.
+        </div>
       </div>
     </div>
-    <div class="controls-row">
-      <button class="btn-reject" id="btnReject">Ignorer</button>
-      <button class="btn-valid" id="btnValid">Valider</button>
-    </div>
-  </div>
 
-  <div class="wrap" id="app">
-    <header>
-      <h1>VBT Pro Audio</h1>
-      <div class="toggle" id="themeBtn">🌗</div>
-    </header>
-
+    <!-- LIVE -->
     <div class="card">
-      <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div id="statusPill" class="status-pill">En attente</div>
-        <select id="timerDelay" style="width:auto; padding:4px 8px; font-size:12px;">
-          <option value="0">Direct</option>
-          <option value="3" selected>3s</option>
-          <option value="5">5s</option>
-          <option value="10">10s</option>
-        </select>
-      </div>
+      <h2>En direct</h2>
 
-      <div class="big-metric">
-        <div class="label">Vitesse Pic</div>
-        <div><span class="val" id="dispV">0.00</span> <span class="unit">m/s</span></div>
-      </div>
-
-      <button class="btn-start" id="btnStart">
-        <span>▶ Démarrer</span>
-      </button>
-    </div>
-
-    <div class="card">
-      <div class="grid-2" style="margin-bottom:15px;">
+      <div class="metricBig">
         <div>
-          <label class="label">Exo</label>
-          <select id="exoSelect">
-            <option value="Bench">Bench</option>
-            <option value="Squat">Squat</option>
-            <option value="Deadlift">Deadlift</option>
+          <div class="label">Vitesse pic (bloquée) — dernière rep</div>
+          <div><span class="value" id="vHold">0.00</span><span class="unit">m/s</span></div>
+        </div>
+        <div class="hint" style="text-align:right;">
+          Rep: <b id="repCount">0</b><br/>
+          État: <b id="repState">—</b>
+        </div>
+      </div>
+
+      <div class="miniRow">
+        <div class="mini">
+          <div class="l">Vitesse instantanée</div>
+          <div class="v"><span id="vLive">0.00</span> <span class="hint">m/s</span></div>
+        </div>
+        <div class="mini">
+          <div class="l">Accélération filtrée</div>
+          <div class="v"><span id="aLive">0.00</span> <span class="hint">m/s²</span></div>
+        </div>
+        <div class="mini">
+          <div class="l">Vitesse pic (pendant rep)</div>
+          <div class="v"><span id="vPeakLive">0.00</span> <span class="hint">m/s</span></div>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Mesure estimée via accélération. Fixation rigide + axe stable = meilleurs profils.
+      </div>
+    </div>
+
+    <!-- PROPOSITION (restituée) -->
+    <div class="card" id="proposal" style="display:none;">
+      <h2>Proposition (rep détectée)</h2>
+      <div class="miniRow">
+        <div class="mini"><div class="l">Vmoy</div><div class="v"><span id="p_vMean">—</span> <span class="hint">m/s</span></div></div>
+        <div class="mini"><div class="l">Vpic</div><div class="v"><span id="p_vPeak">—</span> <span class="hint">m/s</span></div></div>
+        <div class="mini"><div class="l">Apic</div><div class="v"><span id="p_aPeak">—</span> <span class="hint">m/s²</span></div></div>
+      </div>
+      <div class="miniRow" style="margin-top:10px;">
+        <div class="mini"><div class="l">Pmoy (≈)</div><div class="v"><span id="p_pMean">—</span> <span class="hint">W</span></div></div>
+        <div class="mini"><div class="l">Ppic (≈)</div><div class="v"><span id="p_pPeak">—</span> <span class="hint">W</span></div></div>
+        <div class="mini"><div class="l">Durée</div><div class="v"><span id="p_dur">—</span> <span class="hint">s</span></div></div>
+      </div>
+
+      <div class="rowActions">
+        <button id="accept">Valider la rep</button>
+        <button id="discard" class="secondary">Ignorer</button>
+      </div>
+
+      <div class="muted" style="margin-top:8px;">
+        Tant que tu n’as pas validé/ignoré, l’app n’enregistre pas une nouvelle rep.
+      </div>
+    </div>
+
+    <!-- CALCULS SCIENTIST -->
+    <div class="card">
+      <h2>Profil “Scientist” (1RM & Puissance)</h2>
+
+      <div class="btnRow" style="margin-bottom:10px;">
+        <button id="btnCalc" style="display:none;">Calculer Profil 1RM & Puissance</button>
+        <span class="hint" id="calcHint">Ajoute au moins 3 charges distinctes pour activer le calcul.</span>
+      </div>
+
+      <div class="miniRow">
+        <div class="mini">
+          <div class="l">1RM théorique (kg)</div>
+          <div class="v"><span id="rm1">—</span></div>
+          <div class="hint" id="rm1Hint" style="margin-top:4px;">—</div>
+        </div>
+        <div class="mini">
+          <div class="l">R² Charge–Vitesse</div>
+          <div class="v"><span id="r2v">—</span></div>
+          <div class="hint" id="ch0Hint" style="margin-top:4px;">CH0: —</div>
+        </div>
+        <div class="mini">
+          <div class="l">Puissance optimale (charge)</div>
+          <div class="v"><span id="pOptLoad">—</span> <span class="hint">kg</span></div>
+          <div class="hint" id="pOptHint" style="margin-top:4px;">Popt: — W · R²: —</div>
+        </div>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        1RM par droite charge–vitesse (avec seuil MVT ou V=0). Puissance optimale par parabole charge–puissance (sommet).
+      </div>
+    </div>
+
+    <!-- HISTORIQUE + CHART -->
+    <details class="card" open>
+      <summary>Historique & graphique “publication”</summary>
+      <div>
+        <canvas id="chart"></canvas>
+
+        <div class="btnRow" style="margin-top:10px;">
+          <button id="export" class="secondary">Exporter CSV</button>
+          <button id="reset" class="danger">Nouveau set (vider)</button>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>kg</th>
+              <th class="right">Vmoy</th>
+              <th class="right">Vpic</th>
+              <th class="right">Apic</th>
+              <th class="right">Pmoy</th>
+              <th class="right">Ppic</th>
+              <th class="right">s</th>
+              <th>heure</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+
+        <div class="muted" style="margin-top:8px;">
+          Conseil : 3–5 charges distinctes = meilleure régression.
+        </div>
+      </div>
+    </details>
+
+    <!-- ADVANCED -->
+    <details class="card">
+      <summary>Réglages avancés</summary>
+      <div class="grid2">
+        <div>
+          <label for="axisMode">Axe</label>
+          <select id="axisMode">
+            <option value="mag" selected>Magnitude (robuste)</option>
+            <option value="x">Axe X</option>
+            <option value="y">Axe Y</option>
+            <option value="z">Axe Z</option>
           </select>
         </div>
         <div>
-          <label class="label">Charge (kg)</label>
-          <input type="number" id="loadInput" value="60" step="2.5">
+          <label for="decayTau">Anti-dérive vitesse (s)</label>
+          <input id="decayTau" type="number" value="0.35" step="0.05" min="0.05" />
         </div>
       </div>
 
-      <div class="label">Analyse (Double courbe)</div>
-      <div class="chart-box">
-        <canvas id="chart"></canvas>
-      </div>
-      <div style="font-size:10px; color:var(--muted); text-align:center; margin-top:5px;">
-        <span style="color:var(--accent)">●</span> 1RM (Linéaire) &nbsp;&nbsp; 
-        <span style="color:var(--power)">●</span> Puissance (Polynomiale)
-      </div>
-      
-      <div style="margin-top:20px;">
-        <div class="label">Données Séance</div>
-        <div style="overflow-x:auto;">
-          <table id="table">
-            <thead>
-              <tr>
-                <th>Kg</th>
-                <th class="num">V<sub>moy</sub></th>
-                <th class="num">V<sub>pic</sub></th>
-                <th class="num">A<sub>pic</sub></th>
-                <th class="num">Watt</th>
-              </tr>
-            </thead>
-            <tbody id="tbody"></tbody>
-          </table>
+      <div class="grid2" style="margin-top:10px;">
+        <div>
+          <label for="startThr">Seuil début rep (m/s²)</label>
+          <input id="startThr" type="number" value="0.60" step="0.05" min="0" />
         </div>
-        <div style="text-align:center; margin-top:15px;">
-           <button style="background:transparent; color:var(--text); font-size:12px; width:auto; display:inline-block; border:1px solid var(--border);" id="btnExport">Export CSV</button>
-           <button style="background:transparent; color:var(--bad); font-size:12px; width:auto; display:inline-block;" id="btnReset">Reset</button>
+        <div>
+          <label for="stopThr">Seuil fin rep (m/s²)</label>
+          <input id="stopThr" type="number" value="0.25" step="0.05" min="0" />
         </div>
       </div>
-    </div>
+
+      <div class="grid2" style="margin-top:10px;">
+        <div>
+          <label for="stopHold">Temps bas pour finir (ms)</label>
+          <input id="stopHold" type="number" value="250" step="50" min="50" />
+        </div>
+        <div>
+          <label for="alphaFast">Lissage motion (0–1)</label>
+          <input id="alphaFast" type="number" value="0.35" step="0.05" min="0.05" max="0.95" />
+        </div>
+      </div>
+    </details>
+
+    <p class="muted" style="margin-top:12px;">
+      Astuce iPhone : Safari → <b>Partager → Ajouter à l’écran d’accueil</b>.
+    </p>
   </div>
 
 <script>
-// --- CONFIGURATION ---
-const THRESHOLDS = { start: 0.6, stop: 0.25 };
-const HOLD_TIME = 250;
+(() => {
+  const $ = (id) => document.getElementById(id);
 
-// --- AUDIO SYSTEM ---
-const synth = window.speechSynthesis;
-let audioCtx = null;
+  // UI
+  const app = $("app");
+  const exerciseEl = $("exercise");
+  const loadEl = $("load");
+  const mvtEl = $("mvt");
+  const methodEl = $("method");
 
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
+  const startBtn = $("start");
+  const stopBtn = $("stop");
+  const themeBtn = $("theme");
 
-function speak(text) {
-  if (synth.speaking) synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'fr-FR';
-  u.rate = 1.2;
-  synth.speak(u);
-}
+  const sensorDot = $("sensorDot");
+  const sensorText = $("sensorText");
 
-function beep() {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
-  osc.frequency.exponentialRampToValueAtTime(440, audioCtx.currentTime + 0.1);
-  gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.3);
-}
+  const countdownPill = $("countdownPill");
+  const countdownText = $("countdownText");
 
-// --- STATE ---
-let state = {
-  listening: false,
-  locked: false,
-  v: 0,
-  vPeak: 0,
-  aEMA: 0,
-  aPeak: 0,
-  vSum: 0, // Pour la moyenne
-  vCount: 0,
-  history: []
-};
+  const vHoldEl = $("vHold");
+  const vLiveEl = $("vLive");
+  const aLiveEl = $("aLive");
+  const vPeakLiveEl = $("vPeakLive");
+  const repCountEl = $("repCount");
+  const repStateEl = $("repState");
 
-// --- DOM ---
-const $ = (id) => document.getElementById(id);
-const ui = {
-  dispV: $('dispV'),
-  btnStart: $('btnStart'),
-  btnValid: $('btnValid'),
-  btnReject: $('btnReject'),
-  modal: $('validationOverlay'),
-  status: $('statusPill'),
-  cntOverlay: $('cntOverlay'),
-  cntVal: $('cntVal'),
-  tbody: $('tbody'),
-  chart: $('chart'),
-  load: $('loadInput'),
-  exo: $('exoSelect'),
-  timerDelay: $('timerDelay'),
-  modalVal: $('modalVal'),
-  modalPower: $('modalPower'),
-  modalAcc: $('modalAcc')
-};
+  const proposalCard = $("proposal");
+  const p_vMean = $("p_vMean");
+  const p_vPeak = $("p_vPeak");
+  const p_aPeak = $("p_aPeak");
+  const p_pMean = $("p_pMean");
+  const p_pPeak = $("p_pPeak");
+  const p_dur = $("p_dur");
+  const acceptBtn = $("accept");
+  const discardBtn = $("discard");
 
-// --- SENSOR LOGIC ---
-let lastT = null;
-let gSlow = 9.81;
+  const btnCalc = $("btnCalc");
+  const calcHint = $("calcHint");
 
-function onMotion(e) {
-  if (state.locked || !state.listening) return;
+  const rm1El = $("rm1");
+  const rm1Hint = $("rm1Hint");
+  const r2vEl = $("r2v");
+  const ch0Hint = $("ch0Hint");
+  const pOptLoadEl = $("pOptLoad");
+  const pOptHint = $("pOptHint");
 
-  const now = performance.now();
-  if (!lastT) lastT = now;
-  const dt = (now - lastT) / 1000;
-  lastT = now;
-  if (dt > 0.1) return;
+  const tbody = $("tbody");
+  const exportBtn = $("export");
+  const resetBtn = $("reset");
 
-  const acc = e.accelerationIncludingGravity;
-  if (!acc) return;
-  const raw = Math.sqrt(acc.x**2 + acc.y**2 + acc.z**2);
+  // Advanced
+  const axisModeEl = $("axisMode");
+  const decayTauEl = $("decayTau");
+  const startThrEl = $("startThr");
+  const stopThrEl = $("stopThr");
+  const stopHoldEl = $("stopHold");
+  const alphaFastEl = $("alphaFast");
 
-  // Filter
-  gSlow = gSlow * 0.98 + raw * 0.02;
-  const aAbs = Math.abs(raw - gSlow);
-  state.aEMA = state.aEMA * 0.7 + aAbs * 0.3;
+  // Presets (valeurs par défaut)
+  const EX = {
+    bench:   { mvt: 0.17 },
+    squat:   { mvt: 0.30 },
+    deadlift:{ mvt: 0.20 },
+    custom:  { mvt: 0.20 }
+  };
 
-  // Integrate Velocity
-  state.v += (state.aEMA * dt);
-  state.v *= 0.96; // Decay
-  if (state.v < 0) state.v = 0;
+  // Storage
+  const KEY = "vbt_scientist_v2";
+  const rows = []; // validated rows
+  let repCount = 0;
+  let proposal = null;
+  let profile = null;
 
-  // Stats Collection during movement
-  if (state.v > 0.05) { // Only count if moving
-    state.vSum += state.v;
-    state.vCount++;
-    if (state.aEMA > state.aPeak) state.aPeak = state.aEMA;
+  function saveState() {
+    const state = {
+      theme: app.getAttribute("data-theme"),
+      exercise: exerciseEl.value,
+      load: loadEl.value,
+      mvt: mvtEl.value,
+      method: methodEl.value,
+      axisMode: axisModeEl.value,
+      decayTau: decayTauEl.value,
+      startThr: startThrEl.value,
+      stopThr: stopThrEl.value,
+      stopHold: stopHoldEl.value,
+      alphaFast: alphaFastEl.value,
+      repCount,
+      rows
+    };
+    localStorage.setItem(KEY, JSON.stringify(state));
   }
 
-  // Peak Logic
-  if (state.v > state.vPeak) {
-    state.vPeak = state.v;
-    ui.dispV.textContent = state.vPeak.toFixed(2);
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      const s = JSON.parse(raw);
+      if (!s) return;
+      if (s.theme) app.setAttribute("data-theme", s.theme);
+      if (s.exercise) exerciseEl.value = s.exercise;
+      if (s.load) loadEl.value = s.load;
+      if (s.mvt !== undefined) mvtEl.value = s.mvt;
+      if (s.method) methodEl.value = s.method;
+      if (s.axisMode) axisModeEl.value = s.axisMode;
+      if (s.decayTau) decayTauEl.value = s.decayTau;
+      if (s.startThr) startThrEl.value = s.startThr;
+      if (s.stopThr) stopThrEl.value = s.stopThr;
+      if (s.stopHold) stopHoldEl.value = s.stopHold;
+      if (s.alphaFast) alphaFastEl.value = s.alphaFast;
+      if (typeof s.repCount === "number") repCount = s.repCount;
+      if (Array.isArray(s.rows)) { rows.length = 0; for (const r of s.rows) rows.push(r); }
+    } catch {}
   }
 
-  // Stop Logic
-  if (state.vPeak > 0.15 && state.aEMA < THRESHOLDS.stop) {
-    if (!state.stopTimer) state.stopTimer = now;
-    if (now - state.stopTimer > HOLD_TIME) {
-      lockRep();
-    }
-  } else {
-    state.stopTimer = null;
+  // Sensor status
+  let listening = false;
+  let lastMotionAt = 0;
+  function setSensor(kind, text) {
+    sensorDot.className = "dot " + (kind || "");
+    sensorText.textContent = text;
   }
-}
+  setInterval(() => {
+    if (!listening) { setSensor("", countdownActive ? "Préparation…" : "En attente"); return; }
+    const age = performance.now() - lastMotionAt;
+    if (age < 900) setSensor("ok", "Capteurs actifs");
+    else setSensor("bad", "Capteurs inactifs");
+  }, 400);
 
-function startSequence() {
-  initAudio(); // Init audio context on click
-  const delay = parseInt(ui.timerDelay.value);
+  // Countdown (restitué)
+  let countdownActive = false;
+  let countdownTimer = null;
+  let countdownSec = 3;
 
-  if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-    DeviceMotionEvent.requestPermission().then(resp => {
-      if (resp === 'granted') runCountdown(delay);
-    }).catch(alert);
-  } else {
-    runCountdown(delay);
+  function showCountdown(sec){
+    countdownSec = sec;
+    countdownText.textContent = String(countdownSec);
+    countdownPill.style.display = "inline-flex";
   }
-}
-
-function runCountdown(sec) {
-  if (sec <= 0) {
-    beginMeasurement();
-    return;
+  function hideCountdown(){
+    countdownPill.style.display = "none";
   }
-  
-  ui.cntOverlay.style.display = 'flex';
-  ui.cntVal.textContent = sec;
-  speak(sec.toString()); // Voice 3, 2, 1
-  
-  let remaining = sec;
-  const intv = setInterval(() => {
-    remaining--;
-    if (remaining > 0) {
-      ui.cntVal.textContent = remaining;
-      speak(remaining.toString());
+  function cancelCountdown(){
+    if (!countdownActive) return;
+    countdownActive = false;
+    if (countdownTimer) clearInterval(countdownTimer);
+    countdownTimer = null;
+    hideCountdown();
+
+    // UI reset
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+    setSensor("", "En attente");
+  }
+  function startCountdown(sec=3){
+    countdownActive = true;
+    showCountdown(sec);
+
+    // UI: start disabled, stop enabled to cancel
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    setSensor("warn","Préparation…");
+
+    countdownTimer = setInterval(() => {
+      countdownSec -= 1;
+      countdownText.textContent = String(Math.max(0, countdownSec));
+      if (countdownSec <= 0){
+        clearInterval(countdownTimer);
+        countdownTimer = null;
+        countdownActive = false;
+        hideCountdown();
+        startListening();
+      }
+    }, 1000);
+  }
+
+  // Motion processing
+  let lastT = null;
+  let gSlow = 9.81;
+  let aEMA = 0;
+  let v = 0;
+  let vPeakLive = 0;
+
+  // Rep detection
+  let inRep = false;
+  let belowSince = null;
+  let repStartT = null;
+  let repV = [];
+  let repA = [];
+
+  // Chart
+  let chart = null;
+
+  function clampDt(dt){
+    if (!isFinite(dt) || dt <= 0) return 0.016;
+    return Math.max(0.002, Math.min(0.08, dt));
+  }
+
+  function params(){
+    return {
+      START_THR: parseFloat(startThrEl.value) || 0.60,
+      STOP_THR: parseFloat(stopThrEl.value) || 0.25,
+      STOP_HOLD_MS: parseInt(stopHoldEl.value, 10) || 250,
+      DECAY_TAU: Math.max(0.05, parseFloat(decayTauEl.value) || 0.35),
+      ALPHA_SLOW: 0.02,
+      ALPHA_FAST: Math.min(0.95, Math.max(0.05, parseFloat(alphaFastEl.value) || 0.35))
+    };
+  }
+
+  function readAccel(evt){
+    const a = evt.acceleration;
+    const ag = evt.accelerationIncludingGravity;
+
+    let ax=null, ay=null, az=null;
+    if (a && (a.x!==null || a.y!==null || a.z!==null)) { ax=a.x; ay=a.y; az=a.z; }
+    else if (ag && (ag.x!==null || ag.y!==null || ag.z!==null)) { ax=ag.x; ay=ag.y; az=ag.z; }
+    else return null;
+
+    if (ax===null || ay===null || az===null) return null;
+
+    const mode = axisModeEl.value;
+    let raw;
+    if (mode==="mag") raw = Math.sqrt(ax*ax + ay*ay + az*az);
+    else if (mode==="x") raw = ax;
+    else if (mode==="y") raw = ay;
+    else raw = az;
+
+    return { raw };
+  }
+
+  function startRep(now){
+    inRep = true;
+    repCount++;
+    repCountEl.textContent = String(repCount);
+    repStateEl.textContent = "EN REP";
+    repStartT = now;
+    belowSince = null;
+    repV = [];
+    repA = [];
+    v = 0;
+    vPeakLive = 0;
+    vPeakLiveEl.textContent = "0.00";
+    // On garde vHold tel quel au début (il se mettra à jour sur le pic)
+  }
+
+  function endRep(now){
+    inRep = false;
+    repStateEl.textContent = "—";
+    belowSince = null;
+
+    if (repV.length < 6) { repV=[]; repA=[]; v=0; aEMA=0; return; }
+
+    const vMean = repV.reduce((s,x)=>s+x,0) / repV.length;
+    const vPeak = Math.max(...repV);
+    const aPeak = Math.max(...repA);
+    const dur = (now - repStartT) / 1000;
+
+    const load = parseFloat(loadEl.value) || 0;
+    const pMean = load * 9.81 * vMean;
+    const pPeak = load * 9.81 * vPeak;
+
+    proposal = { rep: repCount, load, vMean, vPeak, aPeak, pMean, pPeak, dur, iso: new Date().toISOString() };
+
+    // UI proposal
+    p_vMean.textContent = vMean.toFixed(2);
+    p_vPeak.textContent = vPeak.toFixed(2);
+    p_aPeak.textContent = aPeak.toFixed(2);
+    p_pMean.textContent = Math.round(pMean).toString();
+    p_pPeak.textContent = Math.round(pPeak).toString();
+    p_dur.textContent = dur.toFixed(2);
+
+    // vHold déjà sur le pic (pendant rep), on le reconfirme
+    vHoldEl.textContent = vPeak.toFixed(2);
+
+    proposalCard.style.display = "block";
+
+    // reset for next rep
+    repV = []; repA = [];
+    v = 0; aEMA = 0;
+  }
+
+  function acceptProposal(){
+    if (!proposal) return;
+    rows.push(proposal);
+    proposal = null;
+    proposalCard.style.display = "none";
+
+    // Invalidate profile until recalculated
+    profile = null;
+    updateCalcButton();
+    renderAll();
+    saveState();
+  }
+
+  function discardProposal(){
+    proposal = null;
+    proposalCard.style.display = "none";
+    saveState();
+  }
+
+  function distinctLoadCount(){
+    const s = new Set();
+    for (const r of rows) s.add(r.load.toFixed(2));
+    return s.size;
+  }
+
+  function updateCalcButton(){
+    const n = distinctLoadCount();
+    if (n >= 3) {
+      btnCalc.style.display = "inline-flex";
+      calcHint.textContent = "OK : ≥ 3 charges distinctes. Lance le calcul pour figer les courbes et résultats.";
     } else {
-      clearInterval(intv);
-      ui.cntOverlay.style.display = 'none';
-      beep(); // BEEP at 0
-      beginMeasurement();
+      btnCalc.style.display = "none";
+      calcHint.textContent = "Ajoute au moins 3 charges distinctes pour activer le calcul.";
     }
-  }, 1000);
-}
-
-function beginMeasurement() {
-  state.v = 0; state.vPeak = 0; state.aEMA = 0; 
-  state.aPeak = 0; state.vSum = 0; state.vCount = 0;
-  state.locked = false; state.listening = true;
-  lastT = null;
-  
-  ui.dispV.textContent = "0.00";
-  ui.dispV.style.color = "var(--text)";
-  ui.btnStart.disabled = true;
-  ui.btnStart.textContent = "Mesure...";
-  ui.status.textContent = "En mouvement";
-  ui.status.className = "status-pill active";
-  
-  window.addEventListener('devicemotion', onMotion, {passive: true});
-}
-
-function lockRep() {
-  state.locked = true;
-  state.listening = false;
-  
-  const load = parseFloat(ui.load.value);
-  const vMean = state.vCount > 0 ? (state.vSum / state.vCount) : 0;
-  // Fallback if mean is weirdly low (short impulse)
-  const finalVMean = Math.max(vMean, state.vPeak * 0.6); 
-  const power = Math.round((load * 9.81) * finalVMean); 
-  // Standard VBT often uses Peak Vel for power on non-linear transducers, 
-  // but strict Physics is Mean Force * Mean Vel. We display Mean-based power here.
-
-  state.tempRes = { vPeak: state.vPeak, vMean: finalVMean, aPeak: state.aPeak, p: power, load: load };
-
-  ui.modalVal.textContent = state.vPeak.toFixed(2) + " m/s";
-  ui.modalPower.textContent = power + " W";
-  ui.modalAcc.textContent = state.aPeak.toFixed(1) + " m/s²";
-  ui.modal.classList.add('visible');
-  
-  ui.status.textContent = "Bloqué";
-  ui.status.className = "status-pill locked";
-  
-  if (navigator.vibrate) navigator.vibrate(200);
-}
-
-function finalize(saveIt) {
-  ui.modal.classList.remove('visible');
-  window.removeEventListener('devicemotion', onMotion);
-  
-  if (saveIt && state.tempRes) {
-    state.history.push({
-      id: state.history.length + 1,
-      exo: ui.exo.value,
-      ...state.tempRes
-    });
-    updateTable();
-    updateChart();
   }
 
-  ui.btnStart.disabled = false;
-  ui.btnStart.textContent = "▶ Démarrer";
-  ui.status.textContent = "Prêt";
-  ui.status.className = "status-pill";
-}
+  function linearRegression(points){
+    const n = points.length;
+    if (n < 2) return null;
 
-ui.btnValid.addEventListener('click', () => finalize(true));
-ui.btnReject.addEventListener('click', () => finalize(false));
-ui.btnStart.addEventListener('click', startSequence);
+    const xs = points.map(p=>p.x);
+    const ys = points.map(p=>p.y);
+    const xMean = xs.reduce((a,b)=>a+b,0)/n;
+    const yMean = ys.reduce((a,b)=>a+b,0)/n;
 
-// --- VISUALIZATION ---
+    let num=0, den=0;
+    for (let i=0;i<n;i++){
+      const dx = xs[i]-xMean;
+      num += dx*(ys[i]-yMean);
+      den += dx*dx;
+    }
+    if (den === 0) return null;
 
-function updateTable() {
-  ui.tbody.innerHTML = state.history.slice().reverse().map(r => `
-    <tr>
-      <td>${r.load}</td>
-      <td class="num">${r.vMean.toFixed(2)}</td>
-      <td class="num" style="color:var(--accent)">${r.vPeak.toFixed(2)}</td>
-      <td class="num">${r.aPeak.toFixed(1)}</td>
-      <td class="num" style="color:var(--power)">${r.p}</td>
-    </tr>
-  `).join('');
-}
+    const b = num/den;
+    const a = yMean - b*xMean;
 
-// Math helpers for Regression
-function linearRegression(x, y) {
-  const n = x.length;
-  if(n<2) return null;
-  const sx = x.reduce((a,b)=>a+b,0), sy = y.reduce((a,b)=>a+b,0);
-  const sxy = x.reduce((a,c,i)=>a+c*y[i],0), sxx = x.reduce((a,b)=>a+b*b,0);
-  const den = (n*sxx - sx*sx);
-  if(den===0) return null;
-  const m = (n*sxy - sx*sy)/den;
-  const b = (sy - m*sx)/n;
-  return {m, b};
-}
-
-function polyRegression(x, y) {
-  // Simple Quadratic Regression (y = ax^2 + bx + c) using Matrix determinant approach
-  // Not a full math library, simplified for 3x3
-  const n = x.length;
-  if (n<3) return null;
-  let sX=0, sX2=0, sX3=0, sX4=0, sY=0, sXY=0, sX2Y=0;
-  for(let i=0; i<n; i++){
-    const xi = x[i], yi = y[i], xi2 = xi*xi;
-    sX+=xi; sX2+=xi2; sX3+=xi2*xi; sX4+=xi2*xi2;
-    sY+=yi; sXY+=xi*yi; sX2Y+=xi2*yi;
-  }
-  // Matrix [ [n, sX, sX2], [sX, sX2, sX3], [sX2, sX3, sX4] ] * [c, b, a] = [sY, sXY, sX2Y]
-  // Gaussian elimination or explicit inverse for 3x3 is too long for inline,
-  // Let's rely on a simplified assumption that we fit a parabola through min/max/avg for visual aid
-  // OR better: use linear regression on Power vs Load? No, Power is parabolic.
-  // Fallback: draw smooth curve through points if regression is too heavy for single-file without math.js
-  return null; // Todo: implement if critical, but raw points + linear 1RM is usually standard
-}
-
-function updateChart() {
-  const ctx = ui.chart.getContext('2d');
-  const w = ui.chart.width = ui.chart.clientWidth;
-  const h = ui.chart.height = ui.chart.clientHeight;
-  const data = state.history.filter(h => h.exo === ui.exo.value);
-  
-  ctx.clearRect(0,0,w,h);
-  if(data.length === 0) return;
-
-  // Scales
-  const xs = data.map(d=>d.load);
-  const vs = data.map(d=>d.vMean); // 1RM is based on Mean Vel
-  const ps = data.map(d=>d.p);
-  
-  const minX = Math.min(...xs)*0.9, maxX = Math.max(...xs)*1.1;
-  const maxV = Math.max(...vs, 1.0)*1.1;
-  const maxP = Math.max(...ps, 500)*1.1;
-
-  const toX = (x) => 30 + ((x - minX)/(maxX-minX)) * (w-60);
-  const toY_V = (v) => h - 30 - (v / maxV) * (h-50);
-  const toY_P = (p) => h - 30 - (p / maxP) * (h-50);
-
-  // Axes
-  ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth=1;
-  ctx.beginPath(); ctx.moveTo(30,h-30); ctx.lineTo(w-30,h-30); ctx.stroke();
-
-  // 1. Draw Power Curve (Quadratic approx or just smoothed line)
-  // For VBT, power curve is inverted U. Let's just draw connected points sorted by load for simplicity
-  const sorted = [...data].sort((a,b)=>a.load - b.load);
-  
-  ctx.beginPath();
-  ctx.strokeStyle = '#f59e0b'; // Orange Power
-  ctx.lineWidth = 2;
-  sorted.forEach((d, i) => {
-    const x = toX(d.load), y = toY_P(d.p);
-    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
-  });
-  ctx.stroke();
-  
-  // Power Points
-  ctx.fillStyle = '#f59e0b';
-  sorted.forEach(d => {
-    ctx.beginPath(); ctx.arc(toX(d.load), toY_P(d.p), 4, 0, Math.PI*2); ctx.fill();
-  });
-
-  // 2. Draw 1RM Line (Linear Regression of Velocity)
-  const reg = linearRegression(xs, vs);
-  if (reg && reg.m < 0) { // Slope must be negative
-    ctx.beginPath();
-    ctx.strokeStyle = '#3b82f6'; // Blue Velocity
-    ctx.lineWidth = 2;
-    // Draw line from minX to x-intercept (Speed=0)
-    const y1 = reg.m * minX + reg.b;
-    const xZero = -reg.b / reg.m; // Theoretical 1RM (Velocity = 0)
-    const xTarget = Math.min(xZero, maxX * 1.5); // Don't draw to infinity
-    const y2 = reg.m * xTarget + reg.b;
-    
-    ctx.moveTo(toX(minX), toY_V(y1));
-    ctx.lineTo(toX(xTarget), toY_V(y2));
-    ctx.stroke();
+    let ssTot=0, ssRes=0;
+    for (let i=0;i<n;i++){
+      const yHat = a + b*xs[i];
+      ssTot += (ys[i]-yMean)**2;
+      ssRes += (ys[i]-yHat)**2;
+    }
+    const r2 = (ssTot===0) ? 0 : (1 - ssRes/ssTot);
+    return { a, b, r2 };
   }
 
-  // Velocity Points
-  ctx.fillStyle = '#3b82f6';
-  data.forEach(d => {
-    ctx.beginPath(); ctx.arc(toX(d.load), toY_V(d.vMean), 4, 0, Math.PI*2); ctx.fill();
+  function solve3x3(A, b){
+    const M = [
+      [A[0][0], A[0][1], A[0][2], b[0]],
+      [A[1][0], A[1][1], A[1][2], b[1]],
+      [A[2][0], A[2][1], A[2][2], b[2]],
+    ];
+
+    for (let col=0; col<3; col++){
+      let pivot = col;
+      for (let r=col+1; r<3; r++){
+        if (Math.abs(M[r][col]) > Math.abs(M[pivot][col])) pivot = r;
+      }
+      if (Math.abs(M[pivot][col]) < 1e-12) return null;
+      if (pivot !== col) [M[pivot], M[col]] = [M[col], M[pivot]];
+
+      const div = M[col][col];
+      for (let c=col; c<4; c++) M[col][c] /= div;
+
+      for (let r=0; r<3; r++){
+        if (r === col) continue;
+        const factor = M[r][col];
+        for (let c=col; c<4; c++) M[r][c] -= factor * M[col][c];
+      }
+    }
+    return [M[0][3], M[1][3], M[2][3]];
+  }
+
+  function quadRegression(points){
+    const n = points.length;
+    if (n < 3) return null;
+
+    let S0=n, S1=0, S2=0, S3=0, S4=0;
+    let T0=0, T1=0, T2=0;
+
+    const ys = points.map(p=>p.y);
+    const yMean = ys.reduce((a,b)=>a+b,0)/n;
+
+    for (const p of points){
+      const x = p.x, y = p.y;
+      const x2 = x*x;
+      S1 += x;
+      S2 += x2;
+      S3 += x2*x;
+      S4 += x2*x2;
+
+      T0 += y;
+      T1 += x*y;
+      T2 += x2*y;
+    }
+
+    const A = [
+      [S0, S1, S2],
+      [S1, S2, S3],
+      [S2, S3, S4]
+    ];
+    const sol = solve3x3(A, [T0, T1, T2]);
+    if (!sol) return null;
+
+    const [c0, c1, c2] = sol;
+
+    let ssTot=0, ssRes=0;
+    for (const p of points){
+      const yHat = c0 + c1*p.x + c2*(p.x*p.x);
+      ssTot += (p.y - yMean)**2;
+      ssRes += (p.y - yHat)**2;
+    }
+    const r2 = (ssTot===0) ? 0 : (1 - ssRes/ssTot);
+
+    return { c0, c1, c2, r2 };
+  }
+
+  function computeScientistProfile(){
+    const seen = new Set();
+    const velPts = [];
+    const powPts = [];
+
+    for (const r of rows){
+      const k = r.load.toFixed(2);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      velPts.push({ x: r.load, y: r.vMean });
+      powPts.push({ x: r.load, y: r.pMean });
+    }
+
+    if (velPts.length < 3 || powPts.length < 3) return null;
+
+    const velReg = linearRegression(velPts);
+    const powReg = quadRegression(powPts);
+    if (!velReg || !powReg) return null;
+    if (!(velReg.b < 0)) return null;
+
+    const ch0 = -velReg.a / velReg.b;
+    const mvt = Math.max(0, parseFloat(mvtEl.value) || 0);
+    const method = methodEl.value;
+
+    let rm1 = null;
+    let rmInfo = "";
+
+    if (method === "ch0") {
+      if (exerciseEl.value !== "bench") return null;
+      rm1 = 0.8946 * ch0 + 7.2831;
+      rmInfo = `CH0→1RM (couché)`;
+    } else {
+      rm1 = (mvt - velReg.a) / velReg.b;
+      rmInfo = `Seuil=${mvt.toFixed(2)} m/s`;
+    }
+    if (!isFinite(rm1) || rm1 <= 0) return null;
+
+    const { c0, c1, c2 } = powReg;
+    let xOpt = null;
+    if (Math.abs(c2) > 1e-12) xOpt = -c1 / (2*c2);
+
+    const loads = powPts.map(p=>p.x);
+    const minX = Math.min(...loads);
+    const maxX = Math.max(...loads);
+
+    let clamped = false;
+    if (xOpt === null || !isFinite(xOpt)) { xOpt = (minX + maxX)/2; clamped = true; }
+    if (xOpt < minX) { xOpt = minX; clamped = true; }
+    if (xOpt > maxX) { xOpt = maxX; clamped = true; }
+
+    const popt = c0 + c1*xOpt + c2*xOpt*xOpt;
+
+    return {
+      velReg, powReg,
+      rm1, rmInfo,
+      ch0,
+      r2v: velReg.r2,
+      r2p: powReg.r2,
+      poptLoad: xOpt,
+      poptPow: popt,
+      poptClamped: clamped,
+      velPts, powPts,
+      xMin: minX, xMax: maxX
+    };
+  }
+
+  function renderScientist(){
+    if (!profile){
+      rm1El.textContent = "—";
+      rm1Hint.textContent = "Appuie sur le bouton pour calculer (≥ 3 charges distinctes).";
+      r2vEl.textContent = "—";
+      ch0Hint.textContent = "CH0: —";
+      pOptLoadEl.textContent = "—";
+      pOptHint.textContent = "Popt: — W · R²: —";
+      return;
+    }
+    rm1El.textContent = profile.rm1.toFixed(1);
+    rm1Hint.textContent = `${profile.rmInfo} · R²=${profile.r2v.toFixed(2)}`;
+    r2vEl.textContent = profile.r2v.toFixed(2);
+    ch0Hint.textContent = `CH0: ${profile.ch0.toFixed(1)} kg`;
+    pOptLoadEl.textContent = profile.poptLoad.toFixed(1);
+    const clampTxt = profile.poptClamped ? " (clampé)" : "";
+    pOptHint.textContent = `Popt: ${Math.round(profile.poptPow)} W · R²=${profile.r2p.toFixed(2)}${clampTxt}`;
+  }
+
+  function renderTable(){
+    tbody.innerHTML = "";
+    for (const r of rows){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${r.rep}</td>
+        <td>${r.load.toFixed(1)}</td>
+        <td class="right">${r.vMean.toFixed(2)}</td>
+        <td class="right">${r.vPeak.toFixed(2)}</td>
+        <td class="right">${r.aPeak.toFixed(2)}</td>
+        <td class="right">${Math.round(r.pMean)}</td>
+        <td class="right">${Math.round(r.pPeak)}</td>
+        <td class="right">${r.dur.toFixed(2)}</td>
+        <td>${r.iso.replace("T"," ").replace("Z","")}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function buildTrendLinesForChart(){
+    const ptsVel = rows.map(r => ({ x: r.load, y: r.vMean }));
+    const ptsPow = rows.map(r => ({ x: r.load, y: r.pMean }));
+    let velLine = [];
+    let powCurve = [];
+
+    if (profile){
+      const a = profile.velReg.a, b = profile.velReg.b;
+      const minX = profile.xMin, maxX = profile.xMax;
+      const steps = 30;
+
+      for (let i=0;i<=steps;i++){
+        const x = minX + (maxX-minX)*(i/steps);
+        velLine.push({ x, y: a + b*x });
+      }
+      const c0 = profile.powReg.c0, c1 = profile.powReg.c1, c2 = profile.powReg.c2;
+      for (let i=0;i<=steps;i++){
+        const x = minX + (maxX-minX)*(i/steps);
+        powCurve.push({ x, y: c0 + c1*x + c2*x*x });
+      }
+    }
+    return { ptsVel, ptsPow, velLine, powCurve };
+  }
+
+  function renderChart(){
+    const ctx = $("chart");
+    const { ptsVel, ptsPow, velLine, powCurve } = buildTrendLinesForChart();
+
+    const speedBlue = "rgba(30,107,255,0.95)";
+    const speedBlueSoft = "rgba(30,107,255,0.25)";
+    const powerGold = "rgba(255,180,0,0.90)";
+    const powerGoldSoft = "rgba(255,180,0,0.25)";
+
+    const data = {
+      datasets: [
+        { label: "Vitesse (Vmoy)", data: ptsVel, parsing:false, yAxisID:"yV",
+          showLine:false, pointRadius:4, borderColor:speedBlue, backgroundColor:speedBlue },
+        { label: "Puissance (Pmoy)", data: ptsPow, parsing:false, yAxisID:"yP",
+          showLine:false, pointRadius:4, borderColor:powerGold, backgroundColor:powerGold },
+
+        { label: "Tendance vitesse (linéaire)", data: velLine, parsing:false, yAxisID:"yV",
+          showLine:true, pointRadius:0, borderWidth:2, borderColor:speedBlue, backgroundColor:speedBlueSoft },
+
+        { label: "Tendance puissance (quadratique)", data: powCurve, parsing:false, yAxisID:"yP",
+          showLine:true, pointRadius:0, borderWidth:2, borderColor:powerGold, backgroundColor:powerGoldSoft },
+      ]
+    };
+
+    const options = {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display:true, labels:{ boxWidth:12, boxHeight:12 } },
+        tooltip: { mode:"nearest", intersect:false }
+      },
+      scales: {
+        x: {
+          title: { display:true, text:"Charge (kg)", font:{ weight:"bold" } },
+          grid: { color:"rgba(120,130,150,0.18)" }
+        },
+        yV: {
+          position:"left",
+          title:{ display:true, text:"Vitesse (m/s)", font:{ weight:"bold" } },
+          grid:{ color:"rgba(120,130,150,0.18)" }
+        },
+        yP: {
+          position:"right",
+          title:{ display:true, text:"Puissance (W)", font:{ weight:"bold" } },
+          grid:{ drawOnChartArea:false }
+        }
+      }
+    };
+
+    if (!chart){
+      chart = new Chart(ctx, { type:"scatter", data, options });
+    } else {
+      chart.data = data;
+      chart.options = options;
+      chart.update();
+    }
+  }
+
+  function renderAll(){
+    repCountEl.textContent = String(repCount);
+    updateCalcButton();
+    renderScientist();
+    renderTable();
+    renderChart();
+  }
+
+  function exportCSV(){
+    if (!rows.length) return;
+    const header = ["rep","load_kg","v_mean_ms","v_peak_ms","a_peak_ms2","p_mean_w","p_peak_w","duration_s","timestamp_iso"];
+    const lines = [header.join(",")];
+    for (const r of rows){
+      lines.push([
+        r.rep,
+        r.load.toFixed(2),
+        r.vMean.toFixed(4),
+        r.vPeak.toFixed(4),
+        r.aPeak.toFixed(4),
+        r.pMean.toFixed(2),
+        r.pPeak.toFixed(2),
+        r.dur.toFixed(4),
+        r.iso
+      ].join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `vbt_scientist_${new Date().toISOString().slice(0,19).replace(/[:T]/g,"-")}.csv`;
+    document.body.appendChild(a);
+    a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  }
+
+  function resetAll(){
+    rows.length = 0;
+    repCount = 0;
+    proposal = null;
+    profile = null;
+    proposalCard.style.display = "none";
+
+    vHoldEl.textContent = "0.00";
+    vLiveEl.textContent = "0.00";
+    aLiveEl.textContent = "0.00";
+    vPeakLiveEl.textContent = "0.00";
+    repStateEl.textContent = "—";
+
+    cancelCountdown();
+    stopListening(true);
+
+    renderAll();
+    saveState();
+  }
+
+  function onMotion(evt){
+    lastMotionAt = performance.now();
+
+    const now = performance.now();
+    if (lastT === null) lastT = now;
+    const dt = clampDt((now-lastT)/1000);
+    lastT = now;
+
+    const acc = readAccel(evt);
+    if (!acc) return;
+
+    const p = params();
+
+    gSlow = (1 - p.ALPHA_SLOW) * gSlow + p.ALPHA_SLOW * acc.raw;
+    const aHP = acc.raw - gSlow;
+    const aAbs = Math.abs(aHP);
+
+    aEMA = (1 - p.ALPHA_FAST) * aEMA + p.ALPHA_FAST * aAbs;
+
+    const decay = Math.exp(-dt / p.DECAY_TAU);
+    v = v * decay + aEMA * dt;
+    if (v < 0) v = 0;
+
+    aLiveEl.textContent = aEMA.toFixed(2);
+    vLiveEl.textContent = v.toFixed(2);
+
+    if (inRep){
+      repV.push(v);
+      repA.push(aEMA);
+
+      if (v > vPeakLive){
+        vPeakLive = v;
+        vPeakLiveEl.textContent = vPeakLive.toFixed(2);
+
+        // Blocage du meilleur pic directement (comme avant)
+        vHoldEl.textContent = vPeakLive.toFixed(2);
+      }
+
+      if (aEMA < p.STOP_THR){
+        if (belowSince === null) belowSince = now;
+        if ((now - belowSince) > p.STOP_HOLD_MS) endRep(now);
+      } else belowSince = null;
+
+    } else {
+      if (proposal) return;
+      if (aEMA > p.START_THR) startRep(now);
+    }
+  }
+
+  async function requestPermissionIfNeeded(){
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function"){
+      const resp = await DeviceMotionEvent.requestPermission();
+      if (resp !== "granted") throw new Error("Permission refusée");
+    }
+  }
+
+  function startListening(){
+    if (listening) return;
+
+    window.addEventListener("devicemotion", onMotion, { passive:true });
+    listening = true;
+
+    // reset
+    lastT = null; aEMA = 0; v = 0; vPeakLive = 0; gSlow = 9.81;
+    vLiveEl.textContent = "0.00"; aLiveEl.textContent = "0.00"; vPeakLiveEl.textContent = "0.00";
+    repStateEl.textContent = "—";
+
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+
+    saveState();
+  }
+
+  function stopListening(silent=false){
+    if (!listening) {
+      if (!silent) { startBtn.disabled = false; stopBtn.disabled = true; }
+      return;
+    }
+    window.removeEventListener("devicemotion", onMotion);
+    listening = false;
+
+    inRep = false; belowSince = null; repV=[]; repA=[]; lastT=null; aEMA=0; v=0; vPeakLive=0;
+    repStateEl.textContent = "—";
+
+    if (!silent){
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+    saveState();
+  }
+
+  // Events
+  startBtn.addEventListener("click", async () => {
+    try{
+      setSensor("warn","Autorisation…");
+      await requestPermissionIfNeeded();
+
+      // démarre le compte à rebours (restitué)
+      startCountdown(3);
+
+    }catch(e){
+      console.error(e);
+      setSensor("bad","Capteurs non autorisés");
+      alert("Capteurs indisponibles. iPhone : Safari + HTTPS + autoriser Mouvement & Orientation.");
+      cancelCountdown();
+    }
   });
-}
 
-// --- UTILS ---
-$('themeBtn').onclick = () => {
-  const next = $('app').getAttribute('data-theme')==='dark'?'light':'dark';
-  $('app').setAttribute('data-theme', next);
-};
-$('btnReset').onclick = () => { if(confirm('Reset?')) {state.history=[]; updateTable(); updateChart();} };
-$('btnExport').onclick = () => {
-  const csv = "Load,Vmean,Vpeak,Apeak,Power\n"+state.history.map(r=>`${r.load},${r.vMean},${r.vPeak},${r.aPeak},${r.p}`).join('\n');
-  const a = document.createElement('a'); a.href='data:text/csv,'+encodeURI(csv); a.download='vbt.csv'; a.click();
-};
+  stopBtn.addEventListener("click", () => {
+    // Stop doit aussi annuler le countdown si actif
+    if (countdownActive) { cancelCountdown(); return; }
+    stopListening();
+  });
 
+  themeBtn.addEventListener("click", () => {
+    const t = app.getAttribute("data-theme")==="dark" ? "light" : "dark";
+    app.setAttribute("data-theme", t);
+    saveState();
+    renderChart();
+  });
+
+  acceptBtn.addEventListener("click", acceptProposal);
+  discardBtn.addEventListener("click", discardProposal);
+
+  btnCalc.addEventListener("click", () => {
+    const p = computeScientistProfile();
+    if (!p){
+      profile = null;
+      alert("Impossible de calculer. Vérifie ≥ 3 charges distinctes et pente vitesse négative.");
+    } else {
+      profile = p;
+    }
+    renderAll();
+    saveState();
+  });
+
+  exportBtn.addEventListener("click", exportCSV);
+  resetBtn.addEventListener("click", resetAll);
+
+  function applyExercisePreset(){
+    const ex = EX[exerciseEl.value] || EX.custom;
+    mvtEl.value = String(ex.mvt);
+    profile = null;
+    renderAll();
+    saveState();
+  }
+  exerciseEl.addEventListener("change", applyExercisePreset);
+
+  [loadEl, mvtEl, methodEl, axisModeEl, decayTauEl, startThrEl, stopThrEl, stopHoldEl, alphaFastEl]
+    .forEach(el => el.addEventListener("change", () => {
+      profile = null;
+      renderAll();
+      saveState();
+    }));
+
+  // Init
+  loadState();
+  if (!mvtEl.value) applyExercisePreset();
+  renderAll();
+})();
 </script>
 </body>
 </html>
